@@ -1,0 +1,181 @@
+.section {
+  padding-block: var(--section-py-mobile);
+  background-color: var(--surface);
+  border-top: 1px solid var(--border);
+}
+
+.sectionLabel {
+  display: block;
+  margin-bottom: var(--space-7);
+}
+
+/* Editorial stack layout — not a 3-column card grid (antislop R-05) */
+.grid {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+/* Each package is a horizontal divider-separated row, not a floating card */
+.pkg {
+  position: relative;
+  padding-block: var(--space-7);
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+.pkg:first-child {
+  border-top: 1px solid var(--border);
+}
+
+.pkgTop {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.pkgNumber {
+  color: var(--text-faint);
+}
+
+.pkgName {
+  font-size: var(--font-size-xl);
+  font-weight: 700;
+  letter-spacing: var(--letter-spacing-tight);
+  color: var(--text);
+}
+
+.pkgDivider {
+  height: 1px;
+  background: var(--border);
+  margin-block: var(--space-2);
+}
+
+.pkgPrice {
+  font-size: var(--font-size-xl);
+  font-weight: 600;
+  letter-spacing: var(--letter-spacing-tight);
+  color: var(--text);
+}
+
+.pkgDesc {
+  font-size: var(--font-size-md);
+  color: var(--text-dim);
+  max-width: 48ch;
+}
+
+.pkgMeta {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+}
+
+.pkgTime {
+  font-size: var(--font-size-md);
+  color: var(--text-dim);
+}
+
+.pkgCta {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  align-self: flex-start;
+  margin-top: var(--space-2);
+  padding: var(--space-3) var(--space-6);
+  min-width: 80px;
+  min-height: 44px;
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
+  letter-spacing: var(--letter-spacing-wide);
+  text-transform: uppercase;
+  color: var(--bg);
+  background-color: var(--text);
+  border-radius: var(--radius-sm);
+  border: none;
+  cursor: pointer;
+  transition: opacity var(--transition), transform var(--duration) var(--ease);
+}
+
+.pkgCta:hover {
+  opacity: 0.88;
+}
+
+.pkgCta:active {
+  transform: scale(0.97);
+}
+
+/* Toast feedback */
+.toast {
+  padding: var(--space-4);
+  background-color: var(--surface-2);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-md);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+}
+
+.toastFallback {
+  border-color: var(--muted);
+}
+
+.toastText {
+  font-size: var(--font-size-sm);
+  color: var(--text);
+}
+
+.toastSub {
+  font-size: var(--font-size-sm);
+  color: var(--text-dim);
+}
+
+.toastMessage {
+  font-size: var(--font-size-sm);
+  color: var(--text-dim);
+  font-style: italic;
+  word-break: break-all;
+}
+
+.empty {
+  font-size: var(--font-size-md);
+  color: var(--text-faint);
+  padding-block: var(--space-8);
+}
+
+/* Desktop: side-by-side editorial columns */
+@media (min-width: 900px) {
+  .grid {
+    flex-direction: row;
+    gap: 0;
+  }
+
+  .pkg {
+    flex: 1;
+    border-bottom: none;
+    border-right: 1px solid var(--border);
+    padding-inline: var(--space-6);
+    padding-block: var(--space-8);
+  }
+
+  .pkg:first-child {
+    border-top: none;
+    padding-inline-start: 0;
+  }
+
+  .pkg:last-child {
+    border-right: none;
+  }
+
+  /* top border across all 3 packages as a single line */
+  .grid {
+    border-top: 1px solid var(--border);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .pkgCta {
+    transition: none;
+  }
+}

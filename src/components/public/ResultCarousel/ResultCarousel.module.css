@@ -1,0 +1,106 @@
+.section {
+  padding-block: var(--section-py-mobile);
+  background-color: var(--bg);
+  overflow: hidden;
+}
+
+.sectionLabel {
+  display: block;
+  margin-bottom: var(--space-6);
+}
+
+/* Carousel track — full bleed with padding to show peek of next item */
+.track {
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  -webkit-overflow-scrolling: touch;
+  scroll-padding-inline: var(--container-px);
+  cursor: grab;
+  /* hide scrollbar but keep functionality */
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+.track::-webkit-scrollbar {
+  display: none;
+}
+
+.track:active {
+  cursor: grabbing;
+}
+
+.trackInner {
+  display: flex;
+  gap: var(--space-4);
+  /* leading padding = container-px so first item aligns with page content */
+  padding-inline: var(--container-px);
+  /* trailing padding so last item doesn't snap to viewport edge */
+  padding-inline-end: calc(var(--container-px) + 20vw);
+}
+
+.item {
+  flex: 0 0 auto;
+  /* primary item width: 80vw on mobile (shows peek of next), capped at 480px */
+  width: clamp(260px, 80vw, 480px);
+  scroll-snap-align: start;
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  display: block;
+  position: relative;
+  transition: opacity var(--transition);
+}
+
+.item:hover {
+  opacity: 0.85;
+}
+
+.thumb {
+  width: 100%;
+  /* 3:4 portrait ratio — good for video thumbnails */
+  aspect-ratio: 3 / 4;
+  object-fit: cover;
+  display: block;
+  background-color: var(--surface-2);
+  /* prevent layout shift */
+  min-height: 0;
+}
+
+.instagram {
+  display: inline-block;
+  margin-top: var(--space-6);
+  font-size: var(--font-size-sm);
+  color: var(--text-dim);
+  text-decoration: underline;
+  text-decoration-color: transparent;
+  text-underline-offset: 3px;
+  transition: color var(--transition), text-decoration-color var(--transition);
+}
+
+.instagram:hover,
+.instagram:focus-visible {
+  color: var(--text);
+  text-decoration-color: var(--border-strong);
+}
+
+.empty {
+  font-size: var(--font-size-md);
+  color: var(--text-faint);
+  padding-block: var(--space-8);
+}
+
+@media (min-width: 768px) {
+  .section {
+    padding-block: var(--section-py-desktop);
+  }
+
+  .item {
+    /* slightly larger on tablet/desktop */
+    width: clamp(320px, 40vw, 520px);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .item {
+    transition: none;
+  }
+}

@@ -1,0 +1,94 @@
+/* ==========================================================================
+   RDN Design Tokens
+   Visual direction: dark editorial, charcoal, restrained white typography
+   ========================================================================== */
+
+:root {
+  /* --- Color: Surface --- */
+  --bg:            #1E2023;
+  --surface:       #17191C;
+  --surface-2:     #25282C;
+  --muted:         #47484C;
+
+  /* --- Color: Text --- */
+  --text:          #F2F2F0;
+  --text-dim:      #A7A8AA;
+  --text-faint:    #6B6C6E;
+
+  /* --- Color: Border --- */
+  --border:        rgba(255, 255, 255, 0.10);
+  --border-strong: rgba(255, 255, 255, 0.18);
+
+  /* --- Color: Accent (single, used sparingly) --- */
+  --accent:        #F2F2F0;   /* near-white — identity accent for this monochrome brand */
+  --accent-dim:    rgba(242, 242, 240, 0.08);
+
+  /* --- Typography --- */
+  --font:          'Inter', system-ui, sans-serif;
+  --font-size-xs:  clamp(0.625rem, 1.5vw, 0.75rem);   /* 10–12px */
+  --font-size-sm:  clamp(0.75rem,  2vw,   0.875rem);  /* 12–14px */
+  --font-size-md:  clamp(0.875rem, 2.5vw, 1rem);      /* 14–16px */
+  --font-size-lg:  clamp(1rem,     3vw,   1.25rem);   /* 16–20px */
+  --font-size-xl:  clamp(1.5rem,   5vw,   2.5rem);    /* 24–40px */
+  --font-size-2xl: clamp(2.5rem,   10vw,  6rem);      /* 40–96px: hero RDN */
+
+  --font-weight-regular: 400;
+  --font-weight-medium:  500;
+  --font-weight-semibold:600;
+
+  --letter-spacing-tight: -0.02em;
+  --letter-spacing-wide:  0.12em;   /* uppercase labels only */
+
+  --line-height-tight:  1.1;
+  --line-height-normal: 1.5;
+
+  /* --- Spacing scale --- */
+  --space-1:   4px;
+  --space-2:   8px;
+  --space-3:  12px;
+  --space-4:  16px;
+  --space-5:  24px;
+  --space-6:  32px;
+  --space-7:  48px;
+  --space-8:  64px;
+  --space-9:  96px;
+  --space-10: 128px;
+
+  /* Mobile section padding */
+  --section-px-mobile: var(--space-5);   /* 24px */
+  --section-py-mobile: var(--space-7);   /* 48px */
+  --section-px-desktop: var(--space-8);  /* 64px */
+  --section-py-desktop: var(--space-9);  /* 96px */
+
+  /* --- Radius --- */
+  --radius-sm:  4px;
+  --radius-md:  8px;
+  --radius-lg: 12px;
+
+  /* --- Transition (iOS-style, MOTION 1) --- */
+  --ease:     cubic-bezier(0.25, 0.1, 0.25, 1);
+  --ease-out: cubic-bezier(0, 0, 0.2, 1);
+  --duration: 280ms;
+  --transition: var(--duration) var(--ease);
+
+  /* --- Z-index layers --- */
+  --z-nav:    100;
+  --z-modal:  200;
+  --z-toast:  300;
+
+  /* --- Container --- */
+  --container-max: 1200px;
+  --container-px:  var(--section-px-mobile);
+}
+
+@media (min-width: 768px) {
+  :root {
+    --container-px: var(--space-7);
+  }
+}
+
+@media (min-width: 1024px) {
+  :root {
+    --container-px: var(--section-px-desktop);
+  }
+}
