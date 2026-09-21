@@ -7,21 +7,21 @@ export default function Hero() {
   const headingRef = useRef<HTMLHeadingElement>(null);
   const subRef = useRef<HTMLParagraphElement>(null);
   const labelRef = useRef<HTMLSpanElement>(null);
+  const ctaRef = useRef<HTMLAnchorElement>(null);
 
   useEffect(() => {
-    // iOS-style entrance: fade + translate, staggered
-    const els = [headingRef.current, subRef.current, labelRef.current];
+    const els = [labelRef.current, headingRef.current, subRef.current, ctaRef.current];
     els.forEach((el, i) => {
       if (!el) return;
       el.style.opacity = '0';
-      el.style.transform = 'translateY(16px)';
-      el.style.transition = `opacity 480ms var(--ease-out) ${i * 80}ms, transform 480ms var(--ease-out) ${i * 80}ms`;
-      requestAnimationFrame(() => {
+      el.style.transform = 'translateY(20px)';
+      el.style.transition = `opacity 520ms var(--ease-out) ${i * 90}ms, transform 520ms var(--ease-out) ${i * 90}ms`;
+      requestAnimationFrame(() =>
         requestAnimationFrame(() => {
           el.style.opacity = '1';
           el.style.transform = 'translateY(0)';
-        });
-      });
+        })
+      );
     });
   }, []);
 
@@ -41,12 +41,19 @@ export default function Hero() {
           Dikerjakan dengan serius.
         </p>
 
-        <a href="#get" className={styles.cta}>
+        <a ref={ctaRef} href="#get" className={styles.cta}>
           Lihat paket
         </a>
       </div>
 
-      <div className={styles.divider} aria-hidden="true" />
+      {/* TURA-style section number bottom-left */}
+      <span className={styles.sectionNumber} aria-hidden="true">.01</span>
+
+      {/* Vertical scroll hint right side */}
+      <div className={styles.sideHint} aria-hidden="true">
+        <div className={styles.sideHintLine} />
+        <span className={styles.sideHintLabel}>Scroll</span>
+      </div>
     </section>
   );
 }

@@ -4,80 +4,108 @@
   display: flex;
   flex-direction: column;
   justify-content: flex-end;
-  padding-top: 80px; /* clear fixed nav */
+  padding-top: 80px;
   background-color: var(--bg);
+  overflow: hidden;
 }
 
 .inner {
   padding-block: var(--section-py-mobile);
+  padding-bottom: calc(var(--section-py-mobile) + var(--space-6));
   display: flex;
   flex-direction: column;
-  gap: var(--space-4);
+  gap: var(--space-3);
 }
 
 .label {
-  /* small uppercase label above the heading */
-  margin-bottom: var(--space-2);
+  margin-bottom: var(--space-4);
 }
 
+/* TURA-style hero: massive, tight, left-aligned */
 .heading {
   font-size: var(--font-size-2xl);
-  font-weight: 700;
-  letter-spacing: -0.03em;
-  line-height: 0.92;
+  font-weight: var(--font-weight-black);
+  letter-spacing: -0.04em;
+  line-height: var(--line-height-tight);
   color: var(--text);
+  margin: 0;
 }
 
 .sub {
   font-size: var(--font-size-md);
   color: var(--text-dim);
   line-height: var(--line-height-normal);
-  max-width: 28ch;
-  margin-top: var(--space-2);
+  max-width: 32ch;
+  margin-top: var(--space-4);
 }
 
 .cta {
-  display: inline-block;
-  margin-top: var(--space-5);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  margin-top: var(--space-6);
   font-size: var(--font-size-sm);
   font-weight: var(--font-weight-medium);
   letter-spacing: var(--letter-spacing-wide);
   text-transform: uppercase;
-  color: var(--text);
-  border: 1px solid var(--border-strong);
-  padding: var(--space-3) var(--space-5);
+  color: var(--bg);
+  background-color: var(--text);
+  padding: var(--space-3) var(--space-6);
   border-radius: var(--radius-sm);
-  transition: background-color var(--transition), border-color var(--transition);
-  /* min tap target: handled by padding → ~44px height */
   min-height: 44px;
   align-self: flex-start;
-  align-items: center;
-  display: inline-flex;
+  transition: opacity var(--transition);
 }
 
 .cta:hover {
-  background-color: var(--accent-dim);
-  border-color: var(--border-strong);
+  opacity: 0.88;
 }
 
-.divider {
-  width: 100%;
-  height: 1px;
-  background: var(--border);
-  margin-top: auto;
+/* Section number — TURA .01 style */
+.sectionNumber {
+  position: absolute;
+  bottom: var(--space-6);
+  left: var(--container-px);
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-medium);
+  letter-spacing: var(--letter-spacing-wide);
+  color: var(--text-faint);
+}
+
+/* Vertical social/scroll hint — TURA sidebar */
+.sideHint {
+  position: absolute;
+  right: var(--container-px);
+  bottom: var(--space-6);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.sideHintLine {
+  width: 1px;
+  height: 40px;
+  background: var(--border-strong);
+}
+
+.sideHintLabel {
+  font-size: 10px;
+  font-weight: var(--font-weight-medium);
+  letter-spacing: var(--letter-spacing-wide);
+  text-transform: uppercase;
+  color: var(--text-faint);
+  writing-mode: vertical-rl;
 }
 
 @media (min-width: 768px) {
   .inner {
     padding-block: var(--section-py-desktop);
   }
+}
 
-  .heading {
-    letter-spacing: -0.04em;
-  }
-
-  .sub {
-    font-size: var(--font-size-lg);
-    max-width: 32ch;
+@media (prefers-reduced-motion: reduce) {
+  .cta {
+    transition: none;
   }
 }

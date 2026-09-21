@@ -1,120 +1,219 @@
 .section {
   padding-block: var(--section-py-mobile);
-  background-color: var(--surface);
+  background-color: var(--bg);
   border-top: 1px solid var(--border);
+  position: relative;
 }
 
 .sectionLabel {
   display: block;
-  margin-bottom: var(--space-7);
+  margin-bottom: var(--space-4);
 }
 
-/* Editorial stack layout — not a 3-column card grid (antislop R-05) */
+/* Large "Pricing" display text — from pricing.png */
+.sectionHeading {
+  font-size: var(--font-size-2xl);
+  font-weight: var(--font-weight-black);
+  letter-spacing: -0.04em;
+  line-height: var(--line-height-tight);
+  color: var(--text);
+  margin-bottom: var(--space-8);
+}
+
+/* 3 glassmorphism cards — pricing.png layout */
 .grid {
   display: flex;
   flex-direction: column;
-  gap: 0;
+  gap: var(--space-5);
+  margin-bottom: var(--space-7);
 }
 
-/* Each package is a horizontal divider-separated row, not a floating card */
-.pkg {
+.card {
   position: relative;
-  padding-block: var(--space-7);
-  border-bottom: 1px solid var(--border);
+  background: var(--card-bg);
+  border: 1px solid var(--card-border);
+  border-radius: var(--radius-lg);
+  padding: var(--space-6);
   display: flex;
   flex-direction: column;
   gap: var(--space-4);
+  overflow: hidden;
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  transition: border-color var(--transition), transform var(--transition);
 }
 
-.pkg:first-child {
-  border-top: 1px solid var(--border);
+/* Glow at top of card — per pricing.png */
+.card::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: var(--card-glow);
+  pointer-events: none;
+  border-radius: inherit;
 }
 
-.pkgTop {
+.card:hover {
+  border-color: var(--border-strong);
+  transform: translateY(-2px);
+}
+
+/* Featured / middle card — slightly more prominent */
+.cardFeatured {
+  border-color: rgba(255, 255, 255, 0.22);
+}
+
+.cardFeatured::before {
+  background: radial-gradient(ellipse 70% 40% at 50% 0%, rgba(255,255,255,0.12) 0%, transparent 65%);
+}
+
+.cardTop {
   display: flex;
   flex-direction: column;
   gap: var(--space-2);
 }
 
-.pkgNumber {
+.cardLabel {
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-medium);
+  letter-spacing: var(--letter-spacing-wide);
+  text-transform: uppercase;
   color: var(--text-faint);
 }
 
-.pkgName {
-  font-size: var(--font-size-xl);
-  font-weight: 700;
+/* Large price — pricing.png "$9.99/m" style */
+.cardPrice {
+  font-size: clamp(2rem, 8vw, 3.5rem);
+  font-weight: var(--font-weight-black);
+  letter-spacing: -0.03em;
+  line-height: 1;
+  color: var(--text);
+}
+
+.cardName {
+  font-size: var(--font-size-lg);
+  font-weight: var(--font-weight-semibold);
   letter-spacing: var(--letter-spacing-tight);
   color: var(--text);
 }
 
-.pkgDivider {
+.cardDivider {
   height: 1px;
   background: var(--border);
-  margin-block: var(--space-2);
 }
 
-.pkgPrice {
-  font-size: var(--font-size-xl);
-  font-weight: 600;
-  letter-spacing: var(--letter-spacing-tight);
-  color: var(--text);
-}
-
-.pkgDesc {
-  font-size: var(--font-size-md);
+.cardDesc {
+  font-size: var(--font-size-sm);
   color: var(--text-dim);
-  max-width: 48ch;
+  line-height: 1.6;
 }
 
-.pkgMeta {
+/* Feature checklist — per pricing.png */
+.features {
   display: flex;
   flex-direction: column;
-  gap: var(--space-1);
+  gap: var(--space-3);
+  list-style: none;
+  margin: 0;
+  padding: 0;
 }
 
-.pkgTime {
-  font-size: var(--font-size-md);
+.feature {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-3);
+  font-size: var(--font-size-sm);
   color: var(--text-dim);
 }
 
-.pkgCta {
+.featureCheck {
+  flex-shrink: 0;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: var(--border-strong);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-top: 2px;
+}
+
+.featureCheck::after {
+  content: '';
+  width: 6px;
+  height: 4px;
+  border-left: 1.5px solid var(--text-dim);
+  border-bottom: 1.5px solid var(--text-dim);
+  transform: rotate(-45deg) translateY(-1px);
+}
+
+.cardMeta {
+  font-size: var(--font-size-xs);
+  color: var(--text-faint);
+  display: flex;
+  gap: var(--space-2);
+  align-items: center;
+}
+
+.cardMeta span {
+  font-weight: var(--font-weight-medium);
+  color: var(--text-dim);
+}
+
+/* CTA — pricing.png: dark card gets dark outline btn, featured gets white solid btn */
+.cardCta {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  align-self: flex-start;
-  margin-top: var(--space-2);
-  padding: var(--space-3) var(--space-6);
-  min-width: 80px;
-  min-height: 44px;
+  width: 100%;
+  min-height: 48px;
+  padding: var(--space-3) var(--space-5);
+  border-radius: var(--radius-md);
   font-size: var(--font-size-sm);
   font-weight: var(--font-weight-medium);
   letter-spacing: var(--letter-spacing-wide);
   text-transform: uppercase;
-  color: var(--bg);
-  background-color: var(--text);
-  border-radius: var(--radius-sm);
-  border: none;
   cursor: pointer;
-  transition: opacity var(--transition), transform var(--duration) var(--ease);
+  transition: opacity var(--transition), transform var(--duration) var(--ease), background-color var(--transition);
+  border: none;
+  margin-top: auto;
 }
 
-.pkgCta:hover {
+.cardCtaOutline {
+  background: transparent;
+  border: 1px solid var(--border-strong);
+  color: var(--text-dim);
+}
+
+.cardCtaOutline:hover {
+  background: var(--accent-dim);
+  color: var(--text);
+  border-color: rgba(255,255,255,0.3);
+}
+
+.cardCtaSolid {
+  background: var(--text);
+  color: var(--bg);
+}
+
+.cardCtaSolid:hover {
   opacity: 0.88;
 }
 
-.pkgCta:active {
+.cardCta:active {
   transform: scale(0.97);
 }
 
 /* Toast feedback */
 .toast {
   padding: var(--space-4);
-  background-color: var(--surface-2);
+  background-color: rgba(30, 31, 34, 0.95);
   border: 1px solid var(--border-strong);
   border-radius: var(--radius-md);
   display: flex;
   flex-direction: column;
   gap: var(--space-1);
+  backdrop-filter: blur(8px);
 }
 
 .toastFallback {
@@ -124,6 +223,7 @@
 .toastText {
   font-size: var(--font-size-sm);
   color: var(--text);
+  font-weight: var(--font-weight-medium);
 }
 
 .toastSub {
@@ -144,38 +244,38 @@
   padding-block: var(--space-8);
 }
 
-/* Desktop: side-by-side editorial columns */
-@media (min-width: 900px) {
+/* Section number TURA-style */
+.sectionNumber {
+  position: absolute;
+  bottom: var(--space-6);
+  left: var(--container-px);
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-medium);
+  letter-spacing: var(--letter-spacing-wide);
+  color: var(--text-faint);
+}
+
+@media (min-width: 768px) {
+  .section {
+    padding-block: var(--section-py-desktop);
+    padding-bottom: calc(var(--section-py-desktop) + var(--space-7));
+  }
+
   .grid {
     flex-direction: row;
-    gap: 0;
+    gap: var(--space-5);
+    align-items: stretch;
   }
 
-  .pkg {
+  .card {
     flex: 1;
-    border-bottom: none;
-    border-right: 1px solid var(--border);
-    padding-inline: var(--space-6);
-    padding-block: var(--space-8);
-  }
-
-  .pkg:first-child {
-    border-top: none;
-    padding-inline-start: 0;
-  }
-
-  .pkg:last-child {
-    border-right: none;
-  }
-
-  /* top border across all 3 packages as a single line */
-  .grid {
-    border-top: 1px solid var(--border);
+    padding: var(--space-7);
   }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .pkgCta {
+  .card,
+  .cardCta {
     transition: none;
   }
 }

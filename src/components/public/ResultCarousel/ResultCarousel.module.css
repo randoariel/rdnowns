@@ -2,6 +2,8 @@
   padding-block: var(--section-py-mobile);
   background-color: var(--bg);
   overflow: hidden;
+  position: relative;
+  border-top: 1px solid var(--border);
 }
 
 .sectionLabel {
@@ -97,6 +99,16 @@
     /* slightly larger on tablet/desktop */
     width: clamp(320px, 40vw, 520px);
   }
+}
+
+.sectionNumber {
+  position: absolute;
+  bottom: var(--space-6);
+  left: var(--container-px);
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-medium);
+  letter-spacing: var(--letter-spacing-wide);
+  color: var(--text-faint);
 }
 
 @media (prefers-reduced-motion: reduce) {

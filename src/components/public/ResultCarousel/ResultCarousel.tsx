@@ -126,6 +126,8 @@ export default function ResultCarousel({ items, instagramUsername, instagramUrl 
           </a>
         )}
       </div>
+
+      <span className={styles.sectionNumber} aria-hidden="true">.02</span>
     </section>
   );
 }

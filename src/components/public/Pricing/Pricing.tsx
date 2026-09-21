@@ -10,6 +10,7 @@ export interface PricingPackage {
   price: number;
   description: string;
   estimated_time: string;
+  features?: string[];
 }
 
 interface Props {
@@ -18,7 +19,6 @@ interface Props {
   instagramUsername: string;
 }
 
-// Format Rp price with dot separator (Indonesian format)
 function formatRp(amount: number): string {
   return 'Rp' + amount.toLocaleString('id-ID');
 }
@@ -28,24 +28,46 @@ type ToastState =
   | { type: 'fallback'; message: string }
   | null;
 
+// Default feature lists per package — overrideable from DB in the future
+const DEFAULT_FEATURES: Record<number, string[]> = {
+  1: [
+    'Editing dari footage yang ada',
+    'Color grading dasar',
+    'Subtitle / teks',
+    'Export 1080p',
+    'Revisi 1x',
+  ],
+  2: [
+    'Pengambilan gambar di lokasi',
+    'Full editing + color grading',
+    'Subtitle / teks / grafis',
+    'Export 1080p',
+    'Revisi 2x',
+  ],
+  3: [
+    'Shooting multi-angle',
+    'Editing + motion graphics',
+    'Sound design & mixing',
+    'Export 1080p / 4K',
+    'Revisi tidak terbatas',
+  ],
+};
+
 export default function Pricing({ packages, instagramUrl, instagramUsername }: Props) {
   const [toast, setToast] = useState<ToastState>(null);
   const [activeToastPkg, setActiveToastPkg] = useState<string | null>(null);
 
   async function handleGet(pkg: PricingPackage) {
-    const dm = `Halo, kak. Saya mau pesan ${pkg.name} dengan harga ${formatRp(pkg.price)}.`;
+    const dm = `Halo kak, saya mau pesan paket ${pkg.name} (${formatRp(pkg.price)}). Boleh minta info lebih lanjut?`;
 
-    // Open Instagram in new tab
     window.open(instagramUrl, '_blank', 'noopener noreferrer');
 
-    // Copy to clipboard
     try {
       await navigator.clipboard.writeText(dm);
       setToast({ type: 'success' });
       setActiveToastPkg(pkg.id);
       setTimeout(() => setToast(null), 4000);
     } catch {
-      // Clipboard permission denied — show fallback with message to copy manually
       setToast({ type: 'fallback', message: dm });
       setActiveToastPkg(pkg.id);
     }
@@ -67,66 +89,78 @@ export default function Pricing({ packages, instagramUrl, instagramUsername }: P
       <div className="container">
         <span className={`label ${styles.sectionLabel}`}>Get</span>
 
+        {/* Large "Pricing" heading — per pricing.png */}
+        <h2 className={styles.sectionHeading}>Pricing</h2>
+
         <div className={styles.grid}>
-          {packages.map((pkg) => (
-            <article key={pkg.id} className={styles.pkg}>
-              <div className={styles.pkgTop}>
-                <span className={`label ${styles.pkgNumber}`}>
-                  {String(pkg.package_number).padStart(2, '0')}
-                </span>
-                <h2 className={styles.pkgName}>{pkg.name}</h2>
-              </div>
+          {packages.map((pkg) => {
+            const isFeatured = pkg.package_number === 2;
+            const features = pkg.features ?? DEFAULT_FEATURES[pkg.package_number] ?? [];
 
-              <div className={styles.pkgDivider} aria-hidden="true" />
-
-              <p className={styles.pkgPrice}>{formatRp(pkg.price)}</p>
-
-              <p className={styles.pkgDesc}>{pkg.description}</p>
-
-              <div className={styles.pkgMeta}>
-                <span className="label">Estimasi</span>
-                <span className={styles.pkgTime}>{pkg.estimated_time}</span>
-              </div>
-
-              <button
-                className={styles.pkgCta}
-                onClick={() => handleGet(pkg)}
-                type="button"
-                aria-label={`Pesan paket ${pkg.name}`}
+            return (
+              <article
+                key={pkg.id}
+                className={`${styles.card} ${isFeatured ? styles.cardFeatured : ''}`}
               >
-                GET
-              </button>
-
-              {/* Toast: success */}
-              {toast?.type === 'success' && activeToastPkg === pkg.id && (
-                <div
-                  className={styles.toast}
-                  role="status"
-                  aria-live="polite"
-                  aria-label="Pesan berhasil disalin"
-                >
-                  <p className={styles.toastText}>Pesan sudah disalin.</p>
-                  <p className={styles.toastSub}>Tinggal paste di DM Instagram.</p>
+                <div className={styles.cardTop}>
+                  <span className={styles.cardLabel}>
+                    {String(pkg.package_number).padStart(2, '0')}
+                  </span>
+                  <p className={styles.cardName}>{pkg.name}</p>
+                  <p className={styles.cardPrice}>{formatRp(pkg.price)}</p>
                 </div>
-              )}
 
-              {/* Toast: fallback — clipboard denied */}
-              {toast?.type === 'fallback' && activeToastPkg === pkg.id && (
-                <div
-                  className={`${styles.toast} ${styles.toastFallback}`}
-                  role="alert"
-                  aria-live="assertive"
-                >
-                  <p className={styles.toastText}>Salin pesan berikut:</p>
-                  <p className={styles.toastMessage}>
-                    {(toast as { type: 'fallback'; message: string }).message}
-                  </p>
+                <div className={styles.cardDivider} aria-hidden="true" />
+
+                <p className={styles.cardDesc}>{pkg.description}</p>
+
+                {features.length > 0 && (
+                  <ul className={styles.features} aria-label="Termasuk">
+                    {features.map((f) => (
+                      <li key={f} className={styles.feature}>
+                        <span className={styles.featureCheck} aria-hidden="true" />
+                        {f}
+                      </li>
+                    ))}
+                  </ul>
+                )}
+
+                <div className={styles.cardMeta}>
+                  <span>Estimasi</span>
+                  <span>{pkg.estimated_time}</span>
                 </div>
-              )}
-            </article>
-          ))}
+
+                <button
+                  className={`${styles.cardCta} ${isFeatured ? styles.cardCtaSolid : styles.cardCtaOutline}`}
+                  onClick={() => handleGet(pkg)}
+                  type="button"
+                  aria-label={`Pesan paket ${pkg.name}`}
+                >
+                  GET
+                </button>
+
+                {toast?.type === 'success' && activeToastPkg === pkg.id && (
+                  <div className={styles.toast} role="status" aria-live="polite">
+                    <p className={styles.toastText}>Pesan sudah disalin.</p>
+                    <p className={styles.toastSub}>Tinggal paste di DM Instagram.</p>
+                  </div>
+                )}
+
+                {toast?.type === 'fallback' && activeToastPkg === pkg.id && (
+                  <div className={`${styles.toast} ${styles.toastFallback}`} role="alert" aria-live="assertive">
+                    <p className={styles.toastText}>Salin pesan berikut:</p>
+                    <p className={styles.toastMessage}>
+                      {(toast as { type: 'fallback'; message: string }).message}
+                    </p>
+                  </div>
+                )}
+              </article>
+            );
+          })}
         </div>
       </div>
+
+      <span className={styles.sectionNumber} aria-hidden="true">.03</span>
     </section>
   );
 }

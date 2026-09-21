@@ -48,20 +48,25 @@ export default function Navbar() {
       aria-label="Main navigation"
     >
       <div className={styles.inner}>
-        {NAV_LINKS.map(({ href, label }) => {
-          const id = href.slice(1);
-          const isActive = activeSection === id;
-          return (
-            <a
-              key={href}
-              href={href}
-              className={`${styles.link} ${isActive ? styles.active : ''}`}
-              aria-current={isActive ? 'page' : undefined}
-            >
-              {label}
-            </a>
-          );
-        })}
+        <a href="#home" className={styles.brand} aria-label="RDN — kembali ke atas">
+          RDN
+        </a>
+        <div className={styles.links}>
+          {NAV_LINKS.map(({ href, label }) => {
+            const id = href.slice(1);
+            const isActive = activeSection === id;
+            return (
+              <a
+                key={href}
+                href={href}
+                className={`${styles.link} ${isActive ? styles.active : ''}`}
+                aria-current={isActive ? 'page' : undefined}
+              >
+                {label}
+              </a>
+            );
+          })}
+        </div>
       </div>
     </nav>
   );
