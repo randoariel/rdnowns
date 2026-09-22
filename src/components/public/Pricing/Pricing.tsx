@@ -89,9 +89,6 @@ export default function Pricing({ packages, instagramUrl, instagramUsername }: P
       <div className="container">
         <span className={`label ${styles.sectionLabel}`}>Get</span>
 
-        {/* Large "Pricing" heading — per pricing.png */}
-        <h2 className={styles.sectionHeading}>Pricing</h2>
-
         <div className={styles.grid}>
           {packages.map((pkg) => {
             const isFeatured = pkg.package_number === 2;

@@ -87,6 +87,7 @@ CREATE TABLE IF NOT EXISTS site_settings (
 -- portfolio_results: public can read published items only
 ALTER TABLE portfolio_results ENABLE ROW LEVEL SECURITY;
 
+DROP POLICY IF EXISTS "Public read published results" ON portfolio_results;
 CREATE POLICY "Public read published results"
   ON portfolio_results FOR SELECT
   USING (is_published = TRUE);
@@ -94,6 +95,7 @@ CREATE POLICY "Public read published results"
 -- pricing_packages: public can read published packages only
 ALTER TABLE pricing_packages ENABLE ROW LEVEL SECURITY;
 
+DROP POLICY IF EXISTS "Public read published packages" ON pricing_packages;
 CREATE POLICY "Public read published packages"
   ON pricing_packages FOR SELECT
   USING (is_published = TRUE);
@@ -101,6 +103,7 @@ CREATE POLICY "Public read published packages"
 -- site_settings: public can read
 ALTER TABLE site_settings ENABLE ROW LEVEL SECURITY;
 
+DROP POLICY IF EXISTS "Public read settings" ON site_settings;
 CREATE POLICY "Public read settings"
   ON site_settings FOR SELECT
   USING (TRUE);

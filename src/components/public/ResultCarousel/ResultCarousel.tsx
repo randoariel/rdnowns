@@ -1,12 +1,14 @@
 'use client';
 
-import { useRef, useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import styles from './ResultCarousel.module.css';
 
 export interface PortfolioItem {
   id: string;
   thumbnail_url: string;
+  title?: string;
   project_url: string;
+  is_pinned?: boolean;
 }
 
 interface Props {
@@ -16,39 +18,25 @@ interface Props {
 }
 
 export default function ResultCarousel({ items, instagramUsername, instagramUrl }: Props) {
-  const trackRef = useRef<HTMLDivElement>(null);
-  const [isDragging, setIsDragging] = useState(false);
-  const dragStart = useRef({ x: 0, scrollLeft: 0 });
+  const [activeIndex, setActiveIndex] = useState<number | null>(0);
+  const [showAllModal, setShowAllModal] = useState(false);
 
-  // Mouse drag support (desktop)
-  function onMouseDown(e: React.MouseEvent) {
-    if (!trackRef.current) return;
-    setIsDragging(false);
-    dragStart.current = { x: e.pageX, scrollLeft: trackRef.current.scrollLeft };
-
-    function onMove(ev: MouseEvent) {
-      if (!trackRef.current) return;
-      const dx = ev.pageX - dragStart.current.x;
-      if (Math.abs(dx) > 4) setIsDragging(true);
-      trackRef.current.scrollLeft = dragStart.current.scrollLeft - dx;
+  // Close modal on Escape key
+  useEffect(() => {
+    function handleKeyDown(e: KeyboardEvent) {
+      if (e.key === 'Escape') setShowAllModal(false);
     }
-
-    function onUp() {
-      window.removeEventListener('mousemove', onMove);
-      window.removeEventListener('mouseup', onUp);
+    if (showAllModal) {
+      document.body.style.overflow = 'hidden';
+      window.addEventListener('keydown', handleKeyDown);
+    } else {
+      document.body.style.overflow = '';
     }
-
-    window.addEventListener('mousemove', onMove);
-    window.addEventListener('mouseup', onUp);
-  }
-
-  function onClickCapture(e: React.MouseEvent) {
-    // Block click if user was dragging
-    if (isDragging) {
-      e.preventDefault();
-      e.stopPropagation();
-    }
-  }
+    return () => {
+      document.body.style.overflow = '';
+      window.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [showAllModal]);
 
   if (items.length === 0) {
     return (
@@ -73,47 +61,78 @@ export default function ResultCarousel({ items, instagramUsername, instagramUrl 
     );
   }
 
+  // Filter pinned items for the featured carousel (max 5)
+  // If no items are explicitly pinned, take the first 5 published items
+  const pinnedItems = items.filter((item) => item.is_pinned !== false);
+  const carouselItems = (pinnedItems.length > 0 ? pinnedItems : items).slice(0, 5);
+  const hasMoreThan5 = items.length > 5;
+
   return (
     <section id="result" className={styles.section} aria-label="Portfolio">
       <div className="container">
         <span className={`label ${styles.sectionLabel}`}>Result</span>
-      </div>
 
-      {/* Carousel track — full bleed for edge-to-edge feel */}
-      <div
-        ref={trackRef}
-        className={styles.track}
-        role="list"
-        aria-label="Portfolio karya"
-        onMouseDown={onMouseDown}
-        onClickCapture={onClickCapture}
-      >
-        <div className={styles.trackInner}>
-          {items.map((item, i) => (
-            <a
-              key={item.id}
-              href={item.project_url}
-              target="_blank"
-              rel="noopener noreferrer"
-              className={styles.item}
-              role="listitem"
-              aria-label={`Portofolio ${i + 1} — lihat project`}
-              draggable={false}
-            >
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img
-                src={item.thumbnail_url}
-                alt={`Portofolio ${i + 1}`}
-                className={styles.thumb}
-                loading="lazy"
-                draggable={false}
-              />
-            </a>
-          ))}
+        {/* Vertical/Horizontal Accordion Gallery (Max 5 Pinned Items) */}
+        <div
+          className={styles.accordion}
+          role="list"
+          aria-label="Portfolio karya"
+          onMouseLeave={() => setActiveIndex(0)}
+        >
+          {carouselItems.map((item, i) => {
+            const isActive = activeIndex === i;
+
+            return (
+              <a
+                key={item.id}
+                href={item.project_url}
+                target="_blank"
+                rel="noopener noreferrer"
+                className={`${styles.item} ${isActive ? styles.active : ''}`}
+                role="listitem"
+                aria-label={`${item.title || `Portofolio ${i + 1}`} — lihat project`}
+                onMouseEnter={() => setActiveIndex(i)}
+                onFocus={() => setActiveIndex(i)}
+              >
+                <div className={styles.imageWrapper}>
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img
+                    src={item.thumbnail_url}
+                    alt={item.title || `Portofolio ${i + 1}`}
+                    className={styles.thumb}
+                    loading="lazy"
+                  />
+                  <div className={styles.overlay} />
+                </div>
+
+                <div className={styles.panelContent}>
+                  <span className={styles.indexNumber}>
+                    {String(i + 1).padStart(2, '0')}
+                  </span>
+                  <div className={styles.viewBadge}>
+                    <span>{item.title ? `${item.title} ↗` : 'Lihat Project ↗'}</span>
+                  </div>
+                </div>
+              </a>
+            );
+          })}
         </div>
-      </div>
 
-      <div className="container">
+        {/* "Lihat Semua" button if more than 5 results */}
+        {hasMoreThan5 && (
+          <div className={styles.viewAllWrapper}>
+            <button
+              type="button"
+              className={styles.viewAllBtn}
+              onClick={() => setShowAllModal(true)}
+              aria-haspopup="dialog"
+            >
+              <span>Lihat Semua Karya ({items.length})</span>
+              <span aria-hidden="true">→</span>
+            </button>
+          </div>
+        )}
+
         {instagramUsername && (
           <a
             href={instagramUrl}
@@ -126,6 +145,74 @@ export default function ResultCarousel({ items, instagramUsername, instagramUrl 
           </a>
         )}
       </div>
+
+      {/* YouTube-like Pop-up Modal */}
+      {showAllModal && (
+        <div
+          className={styles.modalOverlay}
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="modal-results-title"
+          onClick={(e) => {
+            if (e.target === e.currentTarget) setShowAllModal(false);
+          }}
+        >
+          <div className={styles.modalContent}>
+            <div className={styles.modalHeader}>
+              <h2 id="modal-results-title" className={styles.modalTitle}>
+                Semua Karya Video ({items.length})
+              </h2>
+              <button
+                type="button"
+                className={styles.closeBtn}
+                onClick={() => setShowAllModal(false)}
+                aria-label="Tutup"
+              >
+                ✕
+              </button>
+            </div>
+
+            <div className={styles.modalBody}>
+              <div className={styles.youtubeGrid}>
+                {items.map((item, idx) => (
+                  <a
+                    key={item.id}
+                    href={item.project_url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className={styles.youtubeCard}
+                    aria-label={`Buka video ${item.title || `Project ${idx + 1}`}`}
+                  >
+                    <div className={styles.youtubeThumbWrapper}>
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img
+                        src={item.thumbnail_url}
+                        alt={item.title || `Thumbnail ${idx + 1}`}
+                        className={styles.youtubeThumb}
+                        loading="lazy"
+                      />
+                      <div className={styles.playBadge}>
+                        <span>▶ Tonton</span>
+                      </div>
+                    </div>
+
+                    <div className={styles.youtubeMeta}>
+                      <h3 className={styles.youtubeTitle}>
+                        {item.title || `Project Video #${idx + 1}`}
+                      </h3>
+                      <p className={styles.youtubeSub}>
+                        <span>RDN Showcase</span>
+                        <span aria-hidden="true">•</span>
+                        <span>Buka Link ↗</span>
+                      </p>
+                    </div>
+                  </a>
+                ))}
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
 
       <span className={styles.sectionNumber} aria-hidden="true">.02</span>
     </section>

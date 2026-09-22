@@ -69,6 +69,18 @@
   gap: var(--space-3);
 }
 
+.socials {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.socialSeparator {
+  color: var(--text-faint);
+  font-size: var(--font-size-xs);
+}
+
 .instagram {
   font-size: var(--font-size-sm);
   color: var(--text-dim);

@@ -2,26 +2,38 @@ import Link from 'next/link';
 import { createServerClient } from '@/lib/supabase/server';
 import styles from './admin.module.css';
 
-async function getStats() {
-  const supabase = createServerClient();
-  const [{ count: totalResults }, { count: publishedResults }, { count: draftPricing }] =
-    await Promise.all([
-      supabase.from('portfolio_results').select('id', { count: 'exact', head: true }),
-      supabase
-        .from('portfolio_results')
-        .select('id', { count: 'exact', head: true })
-        .eq('is_published', true),
-      supabase
-        .from('pricing_packages')
-        .select('id', { count: 'exact', head: true })
-        .eq('is_published', false),
-    ]);
+export const dynamic = 'force-dynamic';
 
-  return {
-    totalResults: totalResults ?? 0,
-    publishedResults: publishedResults ?? 0,
-    draftPricing: draftPricing ?? 0,
-  };
+async function getStats() {
+  const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const key = process.env.SUPABASE_SERVICE_ROLE_KEY;
+  if (!url || !key) {
+    return { totalResults: 0, publishedResults: 0, draftPricing: 0 };
+  }
+
+  try {
+    const supabase = createServerClient();
+    const [{ count: totalResults }, { count: publishedResults }, { count: draftPricing }] =
+      await Promise.all([
+        supabase.from('portfolio_results').select('id', { count: 'exact', head: true }),
+        supabase
+          .from('portfolio_results')
+          .select('id', { count: 'exact', head: true })
+          .eq('is_published', true),
+        supabase
+          .from('pricing_packages')
+          .select('id', { count: 'exact', head: true })
+          .eq('is_published', false),
+      ]);
+
+    return {
+      totalResults: totalResults ?? 0,
+      publishedResults: publishedResults ?? 0,
+      draftPricing: draftPricing ?? 0,
+    };
+  } catch {
+    return { totalResults: 0, publishedResults: 0, draftPricing: 0 };
+  }
 }
 
 export default async function AdminPage() {

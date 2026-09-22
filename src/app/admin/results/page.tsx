@@ -7,8 +7,10 @@ import styles from '../admin.module.css';
 interface ResultItem {
   id: string;
   thumbnail_url: string;
+  title: string;
   project_url: string;
   sort_order: number;
+  is_pinned: boolean;
   is_published: boolean;
   created_at: string;
 }
@@ -34,6 +36,30 @@ export default function ResultsPage() {
   }, []);
 
   useEffect(() => { fetchItems(); }, [fetchItems]);
+
+  async function togglePin(id: string, current: boolean) {
+    setError('');
+    // Check if pinning and already 5 pinned
+    if (!current) {
+      const currentPinnedCount = items.filter(i => i.is_pinned).length;
+      if (currentPinnedCount >= 5) {
+        setError('Maksimal 5 item yang dapat di-pin / show off di Result Carousel.');
+        return;
+      }
+    }
+
+    const res = await fetch(`/api/admin/results/${id}`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ is_pinned: !current }),
+    });
+    const data = await res.json();
+    if (!res.ok) {
+      setError(data.error || 'Gagal mengubah status pin.');
+      return;
+    }
+    fetchItems();
+  }
 
   async function togglePublish(id: string, current: boolean) {
     await fetch(`/api/admin/results/${id}`, {
@@ -108,7 +134,8 @@ export default function ResultsPage() {
             <thead>
               <tr>
                 <th>Thumbnail</th>
-                <th>URL</th>
+                <th>Judul & URL</th>
+                <th>Show Off (Pin max 5)</th>
                 <th>Status</th>
                 <th>Urutan</th>
                 <th>Aksi</th>
@@ -126,14 +153,39 @@ export default function ResultsPage() {
                     />
                   </td>
                   <td>
+                    <p style={{ fontWeight: 'var(--font-weight-semibold)', color: 'var(--text)', marginBottom: '4px' }}>
+                      {item.title || 'Untitled'}
+                    </p>
                     <a
                       href={item.project_url}
                       target="_blank"
                       rel="noopener noreferrer"
                       style={{ color: 'var(--text-dim)', textDecoration: 'underline', fontSize: 'var(--font-size-xs)' }}
                     >
-                      {item.project_url.length > 40 ? item.project_url.slice(0, 40) + '...' : item.project_url}
+                      {item.project_url.length > 35 ? item.project_url.slice(0, 35) + '...' : item.project_url}
                     </a>
+                  </td>
+                  <td>
+                    <button
+                      type="button"
+                      onClick={() => togglePin(item.id, item.is_pinned)}
+                      style={{
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        gap: '6px',
+                        padding: '4px 10px',
+                        borderRadius: 'var(--radius-sm)',
+                        fontSize: 'var(--font-size-xs)',
+                        fontWeight: 'var(--font-weight-medium)',
+                        backgroundColor: item.is_pinned ? 'rgba(255, 215, 0, 0.15)' : 'var(--surface-2)',
+                        color: item.is_pinned ? '#ffd700' : 'var(--text-dim)',
+                        border: item.is_pinned ? '1px solid rgba(255, 215, 0, 0.4)' : '1px solid var(--border)',
+                        cursor: 'pointer'
+                      }}
+                      title={item.is_pinned ? 'Klik untuk unpin' : 'Klik untuk pin (tampil di Result depan)'}
+                    >
+                      {item.is_pinned ? '⭐ Pinned (Depan)' : '☆ Biasa'}
+                    </button>
                   </td>
                   <td>
                     <span className={`${styles.badge} ${item.is_published ? styles.badgePublished : styles.badgeDraft}`}>

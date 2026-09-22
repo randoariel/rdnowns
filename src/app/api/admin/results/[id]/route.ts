@@ -32,15 +32,28 @@ export async function PUT(
     }
   }
 
-  const allowed = ['thumbnail_url', 'thumbnail_path', 'project_url', 'sort_order', 'is_published'];
+  const allowed = ['thumbnail_url', 'thumbnail_path', 'project_url', 'title', 'is_pinned', 'sort_order', 'is_published'];
   const update: Record<string, unknown> = { updated_at: new Date().toISOString() };
   for (const key of allowed) {
     if (key in body) update[key] = body[key];
   }
 
   const supabase = createServerClient();
+
+  // Validate pin limit if setting is_pinned = true
+  if (body.is_pinned === true) {
+    const { data: pinnedRows } = await supabase
+      .from('portfolio_results')
+      .select('id')
+      .eq('is_pinned', true)
+      .neq('id', id);
+    if ((pinnedRows?.length ?? 0) >= 5) {
+      return NextResponse.json({ error: 'Maksimal 5 item yang dapat di-pin / show off di Result.' }, { status: 400 });
+    }
+  }
+
   const { error } = await supabase.from('portfolio_results').update(update).eq('id', id);
-  if (error) return NextResponse.json({ error: 'Gagal memperbarui.' }, { status: 500 });
+  if (error) return NextResponse.json({ error: 'Gagal memperbarui: ' + error.message }, { status: 500 });
   return NextResponse.json({ ok: true });
 }
 

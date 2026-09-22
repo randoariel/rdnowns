@@ -12,6 +12,6 @@ export const SESSION_OPTIONS: SessionOptions = {
     secure: process.env.NODE_ENV === 'production',
     httpOnly: true,
     sameSite: 'lax',
-    maxAge: 60 * 60 * 24 * 7, // 7 days
+    maxAge: undefined, // Session cookie: automatically expires when browser is closed
   },
 };

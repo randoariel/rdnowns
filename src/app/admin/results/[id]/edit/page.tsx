@@ -9,8 +9,10 @@ interface ResultItem {
   id: string;
   thumbnail_url: string;
   thumbnail_path: string;
+  title?: string;
   project_url: string;
   sort_order: number;
+  is_pinned?: boolean;
   is_published: boolean;
 }
 
@@ -21,7 +23,9 @@ export default function EditResultPage() {
   const fileRef = useRef<HTMLInputElement>(null);
 
   const [item, setItem] = useState<ResultItem | null>(null);
+  const [title, setTitle] = useState('');
   const [projectUrl, setProjectUrl] = useState('');
+  const [isPinned, setIsPinned] = useState(false);
   const [isPublished, setIsPublished] = useState(false);
   const [newThumbUrl, setNewThumbUrl] = useState('');
   const [newThumbPath, setNewThumbPath] = useState('');
@@ -37,7 +41,9 @@ export default function EditResultPage() {
     const found = data.find((i) => i.id === id);
     if (found) {
       setItem(found);
+      setTitle(found.title || '');
       setProjectUrl(found.project_url);
+      setIsPinned(found.is_pinned !== false);
       setIsPublished(found.is_published);
       setPreviewUrl(found.thumbnail_url);
     }
@@ -72,7 +78,9 @@ export default function EditResultPage() {
     setSaving(true);
 
     const updateBody: Record<string, unknown> = {
+      title: title.trim(),
       project_url: projectUrl,
+      is_pinned: isPinned,
       is_published: isPublished,
     };
 
@@ -164,6 +172,18 @@ export default function EditResultPage() {
           </div>
 
           <div className={styles.field}>
+            <label htmlFor="edit-title" className={styles.label}>Judul Video / Project</label>
+            <input
+              id="edit-title"
+              type="text"
+              className={styles.input}
+              value={title}
+              onChange={(e) => setTitle(e.target.value)}
+              required
+            />
+          </div>
+
+          <div className={styles.field}>
             <label htmlFor="edit-url" className={styles.label}>URL Project</label>
             <input
               id="edit-url"
@@ -173,6 +193,23 @@ export default function EditResultPage() {
               onChange={(e) => setProjectUrl(e.target.value)}
               required
             />
+          </div>
+
+          <div className={styles.field} style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-2)' }}>
+            <label style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-3)', cursor: 'pointer' }}>
+              <input
+                type="checkbox"
+                checked={isPinned}
+                onChange={(e) => setIsPinned(e.target.checked)}
+                style={{ width: 18, height: 18 }}
+              />
+              <span className={styles.label} style={{ marginBottom: 0 }}>
+                ⭐ Tampilkan di Carousel Result (Pin / Show Off — Max 5)
+              </span>
+            </label>
+            <p style={{ fontSize: 'var(--font-size-xs)', color: 'var(--text-faint)', marginLeft: '26px' }}>
+              Jika dicentang, akan masuk ke 5 video terbaik di halaman depan.
+            </p>
           </div>
 
           <div className={styles.field}>

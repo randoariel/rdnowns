@@ -1,11 +1,12 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import styles from '../admin.module.css';
 
 export default function SetupPage() {
   const router = useRouter();
+  const [checkingSetup, setCheckingSetup] = useState(true);
   const [form, setForm] = useState({
     username: '',
     password: '',
@@ -15,6 +16,25 @@ export default function SetupPage() {
   });
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+
+  // Check if admin already exists
+  useEffect(() => {
+    async function check() {
+      try {
+        const res = await fetch('/api/auth/check-setup', { cache: 'no-store' });
+        const data = await res.json();
+        if (data.isSetupDone) {
+          router.replace('/admin/login');
+          return;
+        }
+      } catch {
+        // continue
+      } finally {
+        setCheckingSetup(false);
+      }
+    }
+    check();
+  }, [router]);
 
   function update(field: string, value: string) {
     setForm((f) => ({ ...f, [field]: value }));
@@ -52,6 +72,14 @@ export default function SetupPage() {
     } finally {
       setLoading(false);
     }
+  }
+
+  if (checkingSetup) {
+    return (
+      <div className={styles.authPage}>
+        <p style={{ color: 'var(--text-faint)' }}>Memeriksa status sistem...</p>
+      </div>
+    );
   }
 
   return (

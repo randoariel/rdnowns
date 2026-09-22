@@ -11,7 +11,9 @@ export default function NewResultPage() {
   const [previewUrl, setPreviewUrl] = useState('');
   const [uploadedPath, setUploadedPath] = useState('');
   const [uploadedUrl, setUploadedUrl] = useState('');
+  const [title, setTitle] = useState('');
   const [projectUrl, setProjectUrl] = useState('');
+  const [isPinned, setIsPinned] = useState(false);
   const [isPublished, setIsPublished] = useState(false);
   const [uploading, setUploading] = useState(false);
   const [saving, setSaving] = useState(false);
@@ -59,7 +61,9 @@ export default function NewResultPage() {
         body: JSON.stringify({
           thumbnail_url: uploadedUrl,
           thumbnail_path: uploadedPath,
+          title: title.trim(),
           project_url: projectUrl,
+          is_pinned: isPinned,
           is_published: isPublished,
         }),
       });
@@ -130,18 +134,48 @@ export default function NewResultPage() {
           )}
 
           <div className={styles.field}>
+            <label htmlFor="project-title" className={styles.label}>Judul Video / Project</label>
+            <input
+              id="project-title"
+              type="text"
+              className={styles.input}
+              placeholder="Contoh: Cinematic School Project 2026"
+              value={title}
+              onChange={(e) => setTitle(e.target.value)}
+              required
+            />
+          </div>
+
+          <div className={styles.field}>
             <label htmlFor="project-url" className={styles.label}>URL Project</label>
             <input
               id="project-url"
               type="url"
               className={styles.input}
-              placeholder="https://instagram.com/..."
+              placeholder="https://instagram.com/... atau https://youtube.com/..."
               value={projectUrl}
               onChange={(e) => setProjectUrl(e.target.value)}
               required
             />
             <p style={{ fontSize: 'var(--font-size-xs)', color: 'var(--text-faint)' }}>
               Instagram, YouTube, TikTok, Google Drive, atau URL lainnya.
+            </p>
+          </div>
+
+          <div className={styles.field} style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-2)' }}>
+            <label style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-3)', cursor: 'pointer' }}>
+              <input
+                type="checkbox"
+                checked={isPinned}
+                onChange={(e) => setIsPinned(e.target.checked)}
+                style={{ width: 18, height: 18 }}
+              />
+              <span className={styles.label} style={{ marginBottom: 0 }}>
+                ⭐ Tampilkan di Carousel Result (Pin / Show Off — Max 5)
+              </span>
+            </label>
+            <p style={{ fontSize: 'var(--font-size-xs)', color: 'var(--text-faint)', marginLeft: '26px' }}>
+              Jika dicentang, akan masuk ke 5 video terbaik di halaman depan.
             </p>
           </div>
 

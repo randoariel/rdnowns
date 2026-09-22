@@ -30,16 +30,27 @@ export default function Footer() {
         <div className={styles.divider} aria-hidden="true" />
 
         <div className={styles.bottom}>
-          {/* Instagram handled as plain text link — per PRD section 7 */}
-          <a
-            href="https://instagram.com/rdn_riifin_cam"
-            target="_blank"
-            rel="noopener noreferrer"
-            className={styles.instagram}
-            aria-label="Instagram @rdn_riifin_cam (opens in new tab)"
-          >
-            @rdn_riifin_cam
-          </a>
+          <div className={styles.socials}>
+            <a
+              href="https://instagram.com/rdn_riifin"
+              target="_blank"
+              rel="noopener noreferrer"
+              className={styles.instagram}
+              aria-label="Instagram @rdn_riifin (opens in new tab)"
+            >
+              Instagram @rdn_riifin
+            </a>
+            <span className={styles.socialSeparator} aria-hidden="true">•</span>
+            <a
+              href="https://www.tiktok.com/@ean_of"
+              target="_blank"
+              rel="noopener noreferrer"
+              className={styles.instagram}
+              aria-label="TikTok @ean_of (opens in new tab)"
+            >
+              TikTok @ean_of
+            </a>
+          </div>
 
           <p className={styles.copy}>
             &copy; {year} RDN. All rights reserved.

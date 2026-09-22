@@ -11,65 +11,145 @@
   margin-bottom: var(--space-6);
 }
 
-/* Carousel track — full bleed with padding to show peek of next item */
-.track {
-  overflow-x: auto;
-  scroll-snap-type: x mandatory;
-  -webkit-overflow-scrolling: touch;
-  scroll-padding-inline: var(--container-px);
-  cursor: grab;
-  /* hide scrollbar but keep functionality */
-  scrollbar-width: none;
-  -ms-overflow-style: none;
-}
-
-.track::-webkit-scrollbar {
-  display: none;
-}
-
-.track:active {
-  cursor: grabbing;
-}
-
-.trackInner {
+/* Accordion Container */
+.accordion {
   display: flex;
-  gap: var(--space-4);
-  /* leading padding = container-px so first item aligns with page content */
-  padding-inline: var(--container-px);
-  /* trailing padding so last item doesn't snap to viewport edge */
-  padding-inline-end: calc(var(--container-px) + 20vw);
+  flex-direction: column;
+  gap: var(--space-3);
+  width: 100%;
+  margin-bottom: var(--space-6);
 }
 
+/* Base Panel */
 .item {
+  position: relative;
+  height: 90px;
   flex: 0 0 auto;
-  /* primary item width: 80vw on mobile (shows peek of next), capped at 480px */
-  width: clamp(260px, 80vw, 480px);
-  scroll-snap-align: start;
   border-radius: var(--radius-md);
   overflow: hidden;
-  display: block;
-  position: relative;
-  transition: opacity var(--transition);
-}
-
-.item:hover {
-  opacity: 0.85;
-}
-
-.thumb {
-  width: 100%;
-  /* 3:4 portrait ratio — good for video thumbnails */
-  aspect-ratio: 3 / 4;
-  object-fit: cover;
-  display: block;
+  border: 1px solid var(--border);
   background-color: var(--surface-2);
-  /* prevent layout shift */
-  min-height: 0;
+  text-decoration: none;
+  cursor: pointer;
+  transition: 
+    flex 500ms cubic-bezier(0.16, 1, 0.3, 1),
+    height 500ms cubic-bezier(0.16, 1, 0.3, 1),
+    border-color var(--transition),
+    box-shadow var(--transition);
+}
+
+.item:hover,
+.item:focus-visible {
+  border-color: var(--border-strong);
+}
+
+/* Active / Focus Panel state */
+.item.active {
+  height: 340px;
+  border-color: rgba(255, 255, 255, 0.3);
+  box-shadow: 0 16px 32px -8px rgba(0, 0, 0, 0.6);
+}
+
+/* Image wrapper holding parallax & zoom effects */
+.imageWrapper {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+}
+
+/* Thumbnail with Monochrome / Grayscale + Zoom + Parallax shift */
+.thumb {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 115%;
+  height: 115%;
+  object-fit: cover;
+  transform: translate(-50%, -50%) scale(1.02);
+  filter: grayscale(100%) contrast(1.1) brightness(0.7);
+  transition: 
+    transform 700ms cubic-bezier(0.16, 1, 0.3, 1),
+    filter 500ms cubic-bezier(0.16, 1, 0.3, 1),
+    opacity 500ms ease;
+  pointer-events: none;
+}
+
+/* Image Reveal & Parallax zoom on active */
+.item.active .thumb {
+  filter: grayscale(85%) contrast(1.05) brightness(0.95);
+  transform: translate(-50%, -50%) scale(1.12);
+}
+
+/* Darkening overlay for inactive bars */
+.overlay {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(to top, rgba(0,0,0,0.85) 0%, rgba(0,0,0,0.2) 60%, rgba(0,0,0,0.4) 100%);
+  opacity: 0.8;
+  transition: opacity 500ms ease;
+  pointer-events: none;
+}
+
+.item.active .overlay {
+  opacity: 0.35;
+}
+
+/* Content overlays */
+.panelContent {
+  position: absolute;
+  inset: 0;
+  padding: var(--space-4) var(--space-5);
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  z-index: 2;
+  pointer-events: none;
+}
+
+.indexNumber {
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-black);
+  letter-spacing: var(--letter-spacing-wide);
+  color: var(--text-dim);
+  transition: color var(--transition);
+}
+
+.item.active .indexNumber {
+  color: var(--text);
+}
+
+.viewBadge {
+  align-self: flex-start;
+  opacity: 0;
+  transform: translateY(8px);
+  transition: 
+    opacity 400ms cubic-bezier(0.16, 1, 0.3, 1) 100ms,
+    transform 400ms cubic-bezier(0.16, 1, 0.3, 1) 100ms;
+}
+
+.viewBadge span {
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-medium);
+  letter-spacing: var(--letter-spacing-wide);
+  text-transform: uppercase;
+  color: var(--text);
+  background-color: rgba(0, 0, 0, 0.65);
+  backdrop-filter: blur(8px);
+  padding: 6px 12px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border-strong);
+}
+
+.item.active .viewBadge {
+  opacity: 1;
+  transform: translateY(0);
 }
 
 .instagram {
   display: inline-block;
-  margin-top: var(--space-6);
+  margin-top: var(--space-4);
   font-size: var(--font-size-sm);
   color: var(--text-dim);
   text-decoration: underline;
@@ -84,21 +164,227 @@
   text-decoration-color: var(--border-strong);
 }
 
+/* View All button — centered below accordion */
+.viewAllWrapper {
+  display: flex;
+  justify-content: center;
+  margin-top: var(--space-6);
+}
+
+.viewAllBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-3) var(--space-6);
+  background: var(--surface-2);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-md);
+  color: var(--text);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
+  letter-spacing: var(--letter-spacing-wide);
+  cursor: pointer;
+  transition: 
+    background-color var(--transition), 
+    border-color var(--transition), 
+    transform var(--transition),
+    box-shadow var(--transition);
+  box-shadow: var(--shadow-sm);
+}
+
+.viewAllBtn:hover {
+  background: rgba(255, 255, 255, 0.1);
+  border-color: rgba(255, 255, 255, 0.4);
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-md);
+}
+
+.viewAllBtn:active {
+  transform: scale(0.98);
+}
+
+/* YouTube-like Gallery Modal */
+.modalOverlay {
+  position: fixed;
+  inset: 0;
+  background-color: rgba(0, 0, 0, 0.85);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  z-index: var(--z-modal);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--space-4);
+  animation: fadeIn 240ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: scale(0.98); }
+  to   { opacity: 1; transform: scale(1); }
+}
+
+.modalContent {
+  background-color: #1a1b1e;
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-lg);
+  width: 100%;
+  max-width: 1100px;
+  max-height: 88vh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  box-shadow: var(--shadow-lg), 0 0 40px rgba(0, 0, 0, 0.8);
+}
+
+.modalHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--space-4) var(--space-6);
+  border-bottom: 1px solid var(--border);
+  background-color: rgba(26, 27, 30, 0.95);
+}
+
+.modalTitle {
+  font-size: var(--font-size-lg);
+  font-weight: var(--font-weight-bold);
+  color: var(--text);
+  margin: 0;
+}
+
+.closeBtn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  color: var(--text-dim);
+  font-size: 18px;
+  cursor: pointer;
+  transition: color var(--transition), background-color var(--transition), border-color var(--transition);
+}
+
+.closeBtn:hover {
+  background: rgba(255, 255, 255, 0.15);
+  color: var(--text);
+  border-color: rgba(255, 255, 255, 0.3);
+}
+
+.modalBody {
+  padding: var(--space-6);
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+
+/* YouTube Style Video Card Grid */
+.youtubeGrid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--space-6);
+}
+
+@media (min-width: 600px) {
+  .youtubeGrid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (min-width: 900px) {
+  .youtubeGrid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+.youtubeCard {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  text-decoration: none;
+  cursor: pointer;
+  border-radius: var(--radius-md);
+  transition: transform var(--transition);
+}
+
+.youtubeCard:hover {
+  transform: translateY(-4px);
+}
+
+/* 16:9 aspect ratio standard thumbnail container */
+.youtubeThumbWrapper {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  background-color: var(--surface-2);
+  border: 1px solid var(--border);
+}
+
+.youtubeThumb {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 400ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.youtubeCard:hover .youtubeThumb {
+  transform: scale(1.05);
+}
+
+.playBadge {
+  position: absolute;
+  bottom: 8px;
+  right: 8px;
+  background-color: rgba(0, 0, 0, 0.8);
+  backdrop-filter: blur(4px);
+  color: #fff;
+  font-size: 11px;
+  font-weight: var(--font-weight-medium);
+  padding: 3px 8px;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.youtubeMeta {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.youtubeTitle {
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-semibold);
+  color: var(--text);
+  line-height: 1.4;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  transition: color var(--transition);
+}
+
+.youtubeCard:hover .youtubeTitle {
+  color: #fff;
+  text-decoration: underline;
+}
+
+.youtubeSub {
+  font-size: var(--font-size-xs);
+  color: var(--text-faint);
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
 .empty {
   font-size: var(--font-size-md);
   color: var(--text-faint);
   padding-block: var(--space-8);
-}
-
-@media (min-width: 768px) {
-  .section {
-    padding-block: var(--section-py-desktop);
-  }
-
-  .item {
-    /* slightly larger on tablet/desktop */
-    width: clamp(320px, 40vw, 520px);
-  }
 }
 
 .sectionNumber {
@@ -111,8 +397,49 @@
   color: var(--text-faint);
 }
 
-@media (prefers-reduced-motion: reduce) {
+/* Desktop & Tablet: Horizontal Accordion */
+@media (min-width: 768px) {
+  .section {
+    padding-block: var(--section-py-desktop);
+  }
+
+  .accordion {
+    flex-direction: row;
+    height: 480px;
+    align-items: stretch;
+    gap: var(--space-3);
+  }
+
   .item {
+    height: auto;
+    flex: 1;
+    min-width: 0;
+  }
+
+  .item.active {
+    height: auto;
+    flex: 3.5;
+  }
+
+  .thumb {
+    width: 140%;
+    height: 100%;
+  }
+
+  .item.active .thumb {
+    transform: translate(-50%, -50%) scale(1.08);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .item,
+  .thumb,
+  .overlay,
+  .viewBadge,
+  .modalOverlay,
+  .youtubeCard,
+  .youtubeThumb {
     transition: none;
+    animation: none;
   }
 }

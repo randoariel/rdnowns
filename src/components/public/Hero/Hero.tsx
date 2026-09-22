@@ -5,12 +5,10 @@ import styles from './Hero.module.css';
 
 export default function Hero() {
   const headingRef = useRef<HTMLHeadingElement>(null);
-  const subRef = useRef<HTMLParagraphElement>(null);
   const labelRef = useRef<HTMLSpanElement>(null);
-  const ctaRef = useRef<HTMLAnchorElement>(null);
 
   useEffect(() => {
-    const els = [labelRef.current, headingRef.current, subRef.current, ctaRef.current];
+    const els = [labelRef.current, headingRef.current];
     els.forEach((el, i) => {
       if (!el) return;
       el.style.opacity = '0';
@@ -28,22 +26,13 @@ export default function Hero() {
   return (
     <section id="home" className={styles.section} aria-label="RDN — Videografi &amp; Video Editing">
       <div className={`container ${styles.inner}`}>
-        <span ref={labelRef} className={`label ${styles.label}`}>
-          Videografi &amp; Video Editing
-        </span>
-
         <h1 ref={headingRef} className={styles.heading}>
           RDN
         </h1>
 
-        <p ref={subRef} className={styles.sub}>
-          Tugas sekolah. Project personal.<br />
-          Dikerjakan dengan serius.
-        </p>
-
-        <a ref={ctaRef} href="#get" className={styles.cta}>
-          Lihat paket
-        </a>
+        <span ref={labelRef} className={`label ${styles.label}`}>
+          Videografi &amp; Video Editing
+        </span>
       </div>
 
       {/* TURA-style section number bottom-left */}
