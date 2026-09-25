@@ -1,5 +1,4 @@
-import fs from 'fs';
-import path from 'path';
+import { createServerClient } from '@/lib/supabase/server';
 
 export const DEFAULT_PRICING_FEATURES: Record<number, string[]> = {
   1: [
@@ -25,54 +24,78 @@ export const DEFAULT_PRICING_FEATURES: Record<number, string[]> = {
   ],
 };
 
-const FEATURES_FILE = path.join(process.cwd(), 'data', 'pricing_features.json');
+const PRICING_CONFIG_ROW_ID = '00000000-0000-0000-0000-000000000002';
 
 export interface PricingFeatureData {
   live: Record<number, string[]>;
   draft: Record<number, string[]>;
 }
 
-export function getPricingFeaturesData(): PricingFeatureData {
+export async function getPricingFeaturesData(): Promise<PricingFeatureData> {
   try {
-    if (!fs.existsSync(FEATURES_FILE)) {
-      const initial: PricingFeatureData = {
-        live: DEFAULT_PRICING_FEATURES,
-        draft: DEFAULT_PRICING_FEATURES,
+    const supabase = createServerClient();
+    const { data } = await supabase
+      .from('portfolio_results')
+      .select('title')
+      .eq('id', PRICING_CONFIG_ROW_ID)
+      .single();
+
+    if (data?.title) {
+      const parsed = JSON.parse(data.title);
+      return {
+        live: parsed.live || DEFAULT_PRICING_FEATURES,
+        draft: parsed.draft || parsed.live || DEFAULT_PRICING_FEATURES,
       };
-      const dir = path.dirname(FEATURES_FILE);
-      if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
-      fs.writeFileSync(FEATURES_FILE, JSON.stringify(initial, null, 2), 'utf-8');
-      return initial;
     }
-    const content = fs.readFileSync(FEATURES_FILE, 'utf-8');
-    return JSON.parse(content);
   } catch {
-    return {
-      live: DEFAULT_PRICING_FEATURES,
-      draft: DEFAULT_PRICING_FEATURES,
-    };
+    // fallback
   }
+
+  return {
+    live: DEFAULT_PRICING_FEATURES,
+    draft: DEFAULT_PRICING_FEATURES,
+  };
 }
 
-export function saveDraftPricingFeatures(draftFeatures: Record<number, string[]>): void {
+export async function saveDraftPricingFeatures(draftFeatures: Record<number, string[]>): Promise<void> {
   try {
-    const current = getPricingFeaturesData();
+    const current = await getPricingFeaturesData();
     current.draft = { ...current.draft, ...draftFeatures };
-    const dir = path.dirname(FEATURES_FILE);
-    if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
-    fs.writeFileSync(FEATURES_FILE, JSON.stringify(current, null, 2), 'utf-8');
+
+    const supabase = createServerClient();
+    await supabase.from('portfolio_results').upsert({
+      id: PRICING_CONFIG_ROW_ID,
+      thumbnail_path: 'app_config/pricing_features',
+      thumbnail_url: 'app_config',
+      project_url: 'https://config.internal',
+      title: JSON.stringify(current),
+      is_published: false,
+      is_pinned: false,
+      sort_order: -9998,
+      updated_at: new Date().toISOString(),
+    });
   } catch (err) {
     console.error('Failed to save draft pricing features:', err);
   }
 }
 
-export function publishPricingFeatures(): void {
+export async function publishPricingFeatures(): Promise<void> {
   try {
-    const current = getPricingFeaturesData();
+    const current = await getPricingFeaturesData();
     current.live = { ...current.draft };
-    const dir = path.dirname(FEATURES_FILE);
-    if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
-    fs.writeFileSync(FEATURES_FILE, JSON.stringify(current, null, 2), 'utf-8');
+
+    const supabase = createServerClient();
+    await supabase.from('portfolio_results').upsert({
+      id: PRICING_CONFIG_ROW_ID,
+      thumbnail_path: 'app_config/pricing_features',
+      thumbnail_url: 'app_config',
+      project_url: 'https://config.internal',
+      title: JSON.stringify(current),
+      is_published: false,
+      is_pinned: false,
+      sort_order: -9998,
+      updated_at: new Date().toISOString(),
+    });
   } catch (err) {
     console.error('Failed to publish pricing features:', err);
   }

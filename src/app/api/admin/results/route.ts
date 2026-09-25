@@ -20,6 +20,7 @@ export async function GET(request: NextRequest) {
   const { data, error } = await supabase
     .from('portfolio_results')
     .select('*')
+    .not('thumbnail_path', 'like', 'app_config/%')
     .order('sort_order', { ascending: true });
 
   if (error) return NextResponse.json({ error: 'Gagal memuat data.' }, { status: 500 });

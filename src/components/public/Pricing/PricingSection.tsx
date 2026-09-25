@@ -32,7 +32,7 @@ const FALLBACK_PACKAGES = [
 const FALLBACK_IG = { username: 'rdn_riifin_cam', url: 'https://instagram.com/rdn_riifin_cam' };
 
 async function getData() {
-  const featuresData = getPricingFeaturesData();
+  const featuresData = await getPricingFeaturesData();
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
   const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
 

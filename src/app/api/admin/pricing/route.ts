@@ -27,7 +27,7 @@ export async function GET(request: NextRequest) {
     .select('*')
     .order('package_number');
 
-  const featuresData = getPricingFeaturesData();
+  const featuresData = await getPricingFeaturesData();
 
   const formatted = (data ?? []).map((pkg) => ({
     ...pkg,
@@ -72,7 +72,7 @@ export async function PATCH(request: NextRequest) {
   );
 
   if (Object.keys(draftFeaturesMap).length > 0) {
-    saveDraftPricingFeatures(draftFeaturesMap);
+    await saveDraftPricingFeatures(draftFeaturesMap);
   }
 
   return NextResponse.json({ ok: true });
@@ -113,7 +113,7 @@ export async function POST(request: NextRequest) {
     )
   );
 
-  publishPricingFeatures();
+  await publishPricingFeatures();
 
   revalidatePath('/');
   revalidatePath('/admin/pricing');

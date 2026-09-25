@@ -117,53 +117,50 @@ export default function PricingAdminPage() {
 
   return (
     <div className={styles.adminLayout}>
-      <aside className={styles.sidebar}>
-        <div className={styles.sidebarHeader}>
-          <span className={styles.logo}>RDN Admin</span>
-        </div>
-        <nav className={styles.nav}>
-          <Link href="/admin" className={styles.navItem}>
-            Dashboard
-          </Link>
-          <Link href="/admin/results" className={styles.navItem}>
-            Portofolio
-          </Link>
-          <Link href="/admin/pricing" className={`${styles.navItem} ${styles.navActive}`}>
-            Pricing
-          </Link>
-          <Link href="/admin/skills" className={styles.navItem}>
-            Software Skills
-          </Link>
-          <Link href="/admin/instagram" className={styles.navItem}>
-            Instagram
-          </Link>
-          <Link href="/admin/settings" className={styles.navItem}>
-            Pengaturan
-          </Link>
+      <aside className={styles.adminSidebar}>
+        <div className={styles.adminSidebarBrand}>RDN Admin</div>
+        <nav className={styles.adminNav} aria-label="Admin navigation">
+          <Link href="/admin" className={styles.adminNavLink}>Overview</Link>
+          <Link href="/admin/results" className={styles.adminNavLink}>Results</Link>
+          <Link href="/admin/skills" className={styles.adminNavLink}>Software Skills</Link>
+          <Link href="/admin/pricing" className={`${styles.adminNavLink} ${styles.adminNavLinkActive}`}>Pricing</Link>
+          <Link href="/admin/instagram" className={styles.adminNavLink}>Instagram</Link>
+          <Link href="/admin/settings" className={styles.adminNavLink}>Settings</Link>
         </nav>
+        <button
+          type="button"
+          onClick={async () => {
+            await fetch('/api/auth/logout', { method: 'POST' });
+            router.push('/admin/login');
+          }}
+          className={styles.linkBtn}
+        >
+          Keluar
+        </button>
       </aside>
 
-      <main className={styles.main}>
-        <div className={styles.pageHeader}>
+      <main className={styles.adminContent}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 'var(--space-6)', flexWrap: 'wrap', gap: 'var(--space-3)' }}>
           <div>
-            <h1 className={styles.pageTitle}>Kelola Paket Pricing</h1>
-            <p className={styles.pageDesc}>
+            <h1 className={styles.adminPageTitle} style={{ marginBottom: 'var(--space-1)' }}>Kelola Paket Pricing</h1>
+            <p style={{ color: 'var(--text-dim)', fontSize: 'var(--font-size-sm)' }}>
               Edit informasi paket, harga, deskripsi, dan fitur checklist yang tertera di website.
             </p>
           </div>
-          <Link href="/" target="_blank" className={styles.viewSiteBtn}>
+          <Link href="/" target="_blank" className={styles.linkBtn} style={{ fontSize: 'var(--font-size-sm)' }}>
             Lihat Website ↗
           </Link>
         </div>
 
         {loading ? (
-          <div className={styles.loading}>Memuat data pricing...</div>
+          <div style={{ color: 'var(--text-faint)' }}>Memuat data pricing...</div>
         ) : (
           <>
-            <div style={{ display: 'flex', gap: 'var(--space-3)', marginBottom: 'var(--space-6)' }}>
+            <div style={{ display: 'flex', gap: 'var(--space-3)', marginBottom: 'var(--space-6)', flexWrap: 'wrap' }}>
               <button
                 type="button"
-                className={styles.secondaryBtn}
+                className={styles.linkBtn}
+                style={{ padding: 'var(--space-2) var(--space-4)', border: '1px solid var(--border-strong)', borderRadius: 'var(--radius-sm)' }}
                 onClick={saveDrafts}
                 disabled={saving || publishing}
               >
@@ -171,7 +168,7 @@ export default function PricingAdminPage() {
               </button>
               <button
                 type="button"
-                className={styles.primaryBtn}
+                className={styles.submitBtn}
                 onClick={publish}
                 disabled={saving || publishing}
               >
@@ -179,7 +176,8 @@ export default function PricingAdminPage() {
               </button>
               <button
                 type="button"
-                className={styles.secondaryBtn}
+                className={styles.linkBtn}
+                style={{ padding: 'var(--space-2) var(--space-4)', border: '1px solid var(--border)', borderRadius: 'var(--radius-sm)' }}
                 onClick={() => setPreviewMode(!previewMode)}
               >
                 {previewMode ? 'Mode Edit' : 'Preview Tampilan'}

@@ -1,5 +1,3 @@
-import fs from 'fs';
-import path from 'path';
 import { createServerClient } from '@/lib/supabase/server';
 
 export interface SoftwareSkill {
@@ -10,10 +8,10 @@ export interface SoftwareSkill {
   created_at: string;
 }
 
-const LOCAL_DATA_FILE = path.join(process.cwd(), 'data', 'software_skills.json');
+const CONFIG_ROW_ID = '00000000-0000-0000-0000-000000000001';
 
-// Default initial skills (Premiere Pro, After Effects, DaVinci Resolve, Photoshop, CapCut, Blender)
-const DEFAULT_SKILLS: SoftwareSkill[] = [
+// Default initial skills
+export const DEFAULT_SKILLS: SoftwareSkill[] = [
   {
     id: 'pr',
     name: 'Premiere Pro',
@@ -85,123 +83,79 @@ const DEFAULT_SKILLS: SoftwareSkill[] = [
   },
 ];
 
-function readLocalData(): SoftwareSkill[] {
+async function getStoredSkills(): Promise<SoftwareSkill[]> {
   try {
-    if (!fs.existsSync(LOCAL_DATA_FILE)) {
-      fs.writeFileSync(LOCAL_DATA_FILE, JSON.stringify(DEFAULT_SKILLS, null, 2), 'utf-8');
-      return DEFAULT_SKILLS;
+    const supabase = createServerClient();
+    const { data } = await supabase
+      .from('portfolio_results')
+      .select('title')
+      .eq('id', CONFIG_ROW_ID)
+      .single();
+
+    if (data?.title) {
+      const parsed = JSON.parse(data.title);
+      if (Array.isArray(parsed)) return parsed;
     }
-    const raw = fs.readFileSync(LOCAL_DATA_FILE, 'utf-8');
-    return JSON.parse(raw);
   } catch {
-    return DEFAULT_SKILLS;
+    // fallback
   }
+  return DEFAULT_SKILLS;
 }
 
-function writeLocalData(data: SoftwareSkill[]): void {
+async function saveStoredSkills(skills: SoftwareSkill[]): Promise<void> {
   try {
-    const dir = path.dirname(LOCAL_DATA_FILE);
-    if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
-    fs.writeFileSync(LOCAL_DATA_FILE, JSON.stringify(data, null, 2), 'utf-8');
-  } catch (e) {
-    console.error('Error writing local software_skills.json:', e);
+    const supabase = createServerClient();
+    await supabase.from('portfolio_results').upsert({
+      id: CONFIG_ROW_ID,
+      thumbnail_path: 'app_config/software_skills',
+      thumbnail_url: 'app_config',
+      project_url: 'https://config.internal',
+      title: JSON.stringify(skills),
+      is_published: false,
+      is_pinned: false,
+      sort_order: -9999,
+      updated_at: new Date().toISOString(),
+    });
+  } catch (err) {
+    console.error('Failed to save software skills to Supabase:', err);
   }
 }
 
 export async function getSoftwareSkills(): Promise<SoftwareSkill[]> {
-  try {
-    const supabase = createServerClient();
-    const { data, error } = await supabase
-      .from('software_skills')
-      .select('*')
-      .order('sort_order', { ascending: true });
-
-    if (!error && Array.isArray(data)) {
-      return data;
-    }
-  } catch {
-    // Supabase unavailable or table doesn't exist yet, fallback to local storage
-  }
-
-  return readLocalData();
+  return await getStoredSkills();
 }
 
 export async function createSoftwareSkill(skill: { name: string; svg_content: string }): Promise<SoftwareSkill> {
+  const current = await getStoredSkills();
   const newSkill: SoftwareSkill = {
     id: `skill_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`,
     name: skill.name.trim() || 'Software',
     svg_content: skill.svg_content.trim(),
-    sort_order: 99,
+    sort_order: current.length,
     created_at: new Date().toISOString(),
   };
 
-  try {
-    const supabase = createServerClient();
-    const { data, error } = await supabase
-      .from('software_skills')
-      .insert({
-        name: newSkill.name,
-        svg_content: newSkill.svg_content,
-        sort_order: newSkill.sort_order,
-      })
-      .select()
-      .single();
-
-    if (!error && data) {
-      return data;
-    }
-  } catch {
-    // fallback
-  }
-
-  const items = readLocalData();
-  newSkill.sort_order = items.length;
-  items.push(newSkill);
-  writeLocalData(items);
+  current.push(newSkill);
+  await saveStoredSkills(current);
   return newSkill;
 }
 
 export async function deleteSoftwareSkill(id: string): Promise<boolean> {
-  let dbSuccess = false;
-  try {
-    const supabase = createServerClient();
-    const { error } = await supabase
-      .from('software_skills')
-      .delete()
-      .eq('id', id);
-
-    if (!error) {
-      dbSuccess = true;
-    }
-  } catch {
-    // Supabase unavailable or table doesn't exist
-  }
-
-  // Always delete from local file storage
-  const items = readLocalData().filter(i => String(i.id) !== String(id));
-  writeLocalData(items);
+  const current = await getStoredSkills();
+  const filtered = current.filter((item) => String(item.id) !== String(id));
+  await saveStoredSkills(filtered);
   return true;
 }
 
 export async function reorderSoftwareSkills(orderedIds: string[]): Promise<boolean> {
-  try {
-    const supabase = createServerClient();
-    const updates = orderedIds.map((id, sort_order) =>
-      supabase.from('software_skills').update({ sort_order }).eq('id', id)
-    );
-    await Promise.all(updates);
-  } catch {
-    // fallback
-  }
-
-  const items = readLocalData();
+  const current = await getStoredSkills();
   const sorted = orderedIds
     .map((id, index) => {
-      const found = items.find(it => it.id === id);
+      const found = current.find((it) => it.id === id);
       return found ? { ...found, sort_order: index } : null;
     })
     .filter(Boolean) as SoftwareSkill[];
 
-  writeLocalData(sorted);
+  await saveStoredSkills(sorted);
   return true;
 }
