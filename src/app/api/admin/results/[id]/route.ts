@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { revalidatePath } from 'next/cache';
 import { getIronSession } from 'iron-session';
 import { type SessionData, SESSION_OPTIONS } from '@/lib/auth/session';
 import { createServerClient } from '@/lib/supabase/server';
@@ -82,6 +83,9 @@ export async function DELETE(
 
   const { error } = await supabase.from('portfolio_results').delete().eq('id', id);
   if (error) return NextResponse.json({ error: 'Gagal menghapus.' }, { status: 500 });
+
+  revalidatePath('/');
+  revalidatePath('/admin/results');
 
   return NextResponse.json({ ok: true });
 }

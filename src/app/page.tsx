@@ -5,6 +5,9 @@ import PricingSection from '@/components/public/Pricing/PricingSection';
 import Footer from '@/components/public/Footer/Footer';
 import SectionTransitionBlur from '@/components/public/SectionTransitionBlur/SectionTransitionBlur';
 
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
+
 export default function HomePage() {
   return (
     <>

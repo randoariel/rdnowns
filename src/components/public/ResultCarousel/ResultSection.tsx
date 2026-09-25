@@ -60,7 +60,7 @@ async function getData() {
     const settings = settingsQuery.data;
 
     return {
-      items: items.length > 0 ? items : FALLBACK_ITEMS,
+      items,
       ig: settings
         ? { username: settings.instagram_username, url: settings.instagram_url }
         : FALLBACK_IG,
@@ -68,7 +68,7 @@ async function getData() {
     };
   } catch {
     const skills = await getSoftwareSkills();
-    return { items: FALLBACK_ITEMS, ig: FALLBACK_IG, skills };
+    return { items: [], ig: FALLBACK_IG, skills };
   }
 }
 
