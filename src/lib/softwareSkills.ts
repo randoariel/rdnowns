@@ -162,6 +162,7 @@ export async function createSoftwareSkill(skill: { name: string; svg_content: st
 }
 
 export async function deleteSoftwareSkill(id: string): Promise<boolean> {
+  let dbSuccess = false;
   try {
     const supabase = createServerClient();
     const { error } = await supabase
@@ -170,16 +171,14 @@ export async function deleteSoftwareSkill(id: string): Promise<boolean> {
       .eq('id', id);
 
     if (!error) {
-      // Also update local file
-      const items = readLocalData().filter(i => i.id !== id);
-      writeLocalData(items);
-      return true;
+      dbSuccess = true;
     }
   } catch {
-    // fallback
+    // Supabase unavailable or table doesn't exist
   }
 
-  const items = readLocalData().filter(i => i.id !== id);
+  // Always delete from local file storage
+  const items = readLocalData().filter(i => String(i.id) !== String(id));
   writeLocalData(items);
   return true;
 }

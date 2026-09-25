@@ -1,7 +1,14 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { revalidatePath } from 'next/cache';
 import { getIronSession } from 'iron-session';
 import { type SessionData, SESSION_OPTIONS } from '@/lib/auth/session';
 import { createServerClient } from '@/lib/supabase/server';
+import { 
+  getPricingFeaturesData, 
+  saveDraftPricingFeatures, 
+  publishPricingFeatures,
+  DEFAULT_PRICING_FEATURES
+} from '@/lib/pricingFeatures';
 
 async function requireAuth(request: NextRequest) {
   const response = NextResponse.next();
@@ -9,7 +16,7 @@ async function requireAuth(request: NextRequest) {
   return session.isLoggedIn ? session : null;
 }
 
-// GET — returns all 3 packages with draft fields for admin
+// GET — returns all 3 packages with draft fields + features checklist for admin
 export async function GET(request: NextRequest) {
   if (!(await requireAuth(request))) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
@@ -19,31 +26,55 @@ export async function GET(request: NextRequest) {
     .from('pricing_packages')
     .select('*')
     .order('package_number');
-  return NextResponse.json(data ?? []);
+
+  const featuresData = getPricingFeaturesData();
+
+  const formatted = (data ?? []).map((pkg) => ({
+    ...pkg,
+    features: featuresData.live[pkg.package_number] ?? DEFAULT_PRICING_FEATURES[pkg.package_number] ?? [],
+    draft_features: featuresData.draft[pkg.package_number] ?? featuresData.live[pkg.package_number] ?? DEFAULT_PRICING_FEATURES[pkg.package_number] ?? [],
+  }));
+
+  return NextResponse.json(formatted);
 }
 
-// PATCH — save draft for one or all packages
+// PATCH — save draft for one or all packages + draft features checklist
 export async function PATCH(request: NextRequest) {
   if (!(await requireAuth(request))) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
   let body: Array<{
     id: string;
+    package_number?: number;
     draft_name?: string;
     draft_price?: number;
     draft_description?: string;
     draft_estimated_time?: string;
+    draft_features?: string[];
   }>;
   try { body = await request.json(); } catch {
     return NextResponse.json({ error: 'Invalid request' }, { status: 400 });
   }
 
   const supabase = createServerClient();
+  const draftFeaturesMap: Record<number, string[]> = {};
+
   await Promise.all(
-    body.map(({ id, ...draft }) =>
-      supabase.from('pricing_packages').update({ ...draft, updated_at: new Date().toISOString() }).eq('id', id)
-    )
+    body.map(({ id, package_number, draft_features, ...draft }) => {
+      if (package_number && Array.isArray(draft_features)) {
+        draftFeaturesMap[package_number] = draft_features;
+      }
+      return supabase
+        .from('pricing_packages')
+        .update({ ...draft, updated_at: new Date().toISOString() })
+        .eq('id', id);
+    })
   );
+
+  if (Object.keys(draftFeaturesMap).length > 0) {
+    saveDraftPricingFeatures(draftFeaturesMap);
+  }
+
   return NextResponse.json({ ok: true });
 }
 
@@ -81,6 +112,11 @@ export async function POST(request: NextRequest) {
       }).eq('id', pkg.id)
     )
   );
+
+  publishPricingFeatures();
+
+  revalidatePath('/');
+  revalidatePath('/admin/pricing');
 
   return NextResponse.json({ ok: true });
 }

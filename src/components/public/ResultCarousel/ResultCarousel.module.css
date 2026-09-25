@@ -59,6 +59,31 @@
   overflow: hidden;
 }
 
+.emptyPlaceholderThumb {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  background: radial-gradient(circle at 50% 50%, #25272e 0%, #111215 100%);
+  user-select: none;
+}
+
+.emptyPlaceholderIcon {
+  font-size: 26px;
+  opacity: 0.7;
+}
+
+.emptyPlaceholderText {
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-semibold);
+  letter-spacing: var(--letter-spacing-wide);
+  text-transform: uppercase;
+  color: var(--text-dim);
+}
+
 /* Thumbnail with Monochrome / Grayscale + Zoom + Parallax shift */
 .thumb {
   position: absolute;

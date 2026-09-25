@@ -1,7 +1,6 @@
-// Server component — fetches pricing + settings, renders Pricing client component
-
 import Pricing from './Pricing';
 import { createServerClient } from '@/lib/supabase/server';
+import { getPricingFeaturesData, DEFAULT_PRICING_FEATURES } from '@/lib/pricingFeatures';
 
 const FALLBACK_PACKAGES = [
   {
@@ -33,10 +32,17 @@ const FALLBACK_PACKAGES = [
 const FALLBACK_IG = { username: 'rdn_riifin_cam', url: 'https://instagram.com/rdn_riifin_cam' };
 
 async function getData() {
+  const featuresData = getPricingFeaturesData();
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
   const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+
+  const fallbackWithFeatures = FALLBACK_PACKAGES.map(pkg => ({
+    ...pkg,
+    features: featuresData.live[pkg.package_number] ?? DEFAULT_PRICING_FEATURES[pkg.package_number] ?? [],
+  }));
+
   if (!supabaseUrl || !serviceKey || supabaseUrl.includes('your-project')) {
-    return { packages: FALLBACK_PACKAGES, ig: FALLBACK_IG };
+    return { packages: fallbackWithFeatures, ig: FALLBACK_IG };
   }
 
   try {
@@ -53,17 +59,21 @@ async function getData() {
         .single(),
     ]);
 
-    const packages = pkgQuery.data ?? [];
+    const packages = (pkgQuery.data ?? []).map(pkg => ({
+      ...pkg,
+      features: featuresData.live[pkg.package_number] ?? DEFAULT_PRICING_FEATURES[pkg.package_number] ?? [],
+    }));
+
     const settings = settingsQuery.data;
 
     return {
-      packages: packages.length > 0 ? packages : FALLBACK_PACKAGES,
+      packages: packages.length > 0 ? packages : fallbackWithFeatures,
       ig: settings
         ? { username: settings.instagram_username, url: settings.instagram_url }
         : FALLBACK_IG,
     };
   } catch {
-    return { packages: FALLBACK_PACKAGES, ig: FALLBACK_IG };
+    return { packages: fallbackWithFeatures, ig: FALLBACK_IG };
   }
 }
 

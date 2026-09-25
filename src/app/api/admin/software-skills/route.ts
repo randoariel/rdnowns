@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { revalidatePath } from 'next/cache';
 import { getIronSession } from 'iron-session';
 import { type SessionData, SESSION_OPTIONS } from '@/lib/auth/session';
 import { 
@@ -94,6 +95,10 @@ export async function DELETE(request: NextRequest) {
   }
 
   await deleteSoftwareSkill(id);
+
+  revalidatePath('/');
+  revalidatePath('/admin/skills');
+
   return NextResponse.json({ ok: true });
 }
 

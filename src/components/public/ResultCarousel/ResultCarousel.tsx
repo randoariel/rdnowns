@@ -41,33 +41,38 @@ export default function ResultCarousel({ items, instagramUsername, instagramUrl,
     };
   }, [showAllModal]);
 
-  if (items.length === 0) {
-    return (
-      <section id="result" className={styles.section} aria-label="Portfolio">
-        <div className="container">
-          <span className={`label ${styles.sectionLabel}`}>Result</span>
-          <p className={styles.empty}>Karya lain segera hadir.</p>
-
-          {instagramUsername && (
-            <a
-              href={instagramUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-              className={styles.instagram}
-              aria-label={`Instagram ${instagramUsername} (opens in new tab)`}
-            >
-              @{instagramUsername}
-            </a>
-          )}
-        </div>
-      </section>
-    );
-  }
+  // If items empty, create 3 elegant placeholder cards so carousel structure and dock remain visible
+  const isFallbackEmpty = items.length === 0;
+  const displayItems: PortfolioItem[] = isFallbackEmpty
+    ? [
+        {
+          id: 'placeholder-1',
+          thumbnail_url: '',
+          title: 'Karya Baru Segera Hadir',
+          project_url: instagramUrl || '#',
+          is_pinned: true,
+        },
+        {
+          id: 'placeholder-2',
+          thumbnail_url: '',
+          title: 'Upcoming Project',
+          project_url: instagramUrl || '#',
+          is_pinned: true,
+        },
+        {
+          id: 'placeholder-3',
+          thumbnail_url: '',
+          title: 'Next Showcase',
+          project_url: instagramUrl || '#',
+          is_pinned: true,
+        },
+      ]
+    : items;
 
   // Filter pinned items for the featured carousel (max 5)
   // If no items are explicitly pinned, take the first 5 published items
-  const pinnedItems = items.filter((item) => item.is_pinned !== false);
-  const carouselItems = (pinnedItems.length > 0 ? pinnedItems : items).slice(0, 5);
+  const pinnedItems = displayItems.filter((item) => item.is_pinned !== false);
+  const carouselItems = (pinnedItems.length > 0 ? pinnedItems : displayItems).slice(0, 5);
   const hasMoreThan5 = items.length > 5;
 
   return (
@@ -98,13 +103,20 @@ export default function ResultCarousel({ items, instagramUsername, instagramUrl,
                 onFocus={() => setActiveIndex(i)}
               >
                 <div className={styles.imageWrapper}>
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img
-                    src={item.thumbnail_url}
-                    alt={item.title || `Portofolio ${i + 1}`}
-                    className={styles.thumb}
-                    loading="lazy"
-                  />
+                  {item.thumbnail_url ? (
+                    /* eslint-disable-next-line @next/next/no-img-element */
+                    <img
+                      src={item.thumbnail_url}
+                      alt={item.title || `Portofolio ${i + 1}`}
+                      className={styles.thumb}
+                      loading="lazy"
+                    />
+                  ) : (
+                    <div className={styles.emptyPlaceholderThumb}>
+                      <span className={styles.emptyPlaceholderIcon}>🎬</span>
+                      <span className={styles.emptyPlaceholderText}>Coming Soon</span>
+                    </div>
+                  )}
                   <div className={styles.overlay} />
                 </div>
 
