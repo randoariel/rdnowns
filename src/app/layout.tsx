@@ -12,6 +12,15 @@ export const metadata: Metadata = {
   title: 'RDN — Videografi & Video Editing',
   description: 'Jasa videografi dan video editing untuk tugas sekolah dan project personal. Lihat portofolio dan pilih paket.',
   keywords: ['videografi', 'video editing', 'tugas sekolah', 'RDN'],
+  icons: {
+    icon: [
+      { url: '/favicon.png', type: 'image/png' },
+      { url: '/favicon.ico' },
+    ],
+    apple: [
+      { url: '/favicon.png', type: 'image/png' },
+    ],
+  },
   openGraph: {
     title: 'RDN — Videografi & Video Editing',
     description: 'Jasa videografi dan video editing untuk tugas sekolah.',
