@@ -1,6 +1,7 @@
 // Server component — fetches pricing + settings, renders Pricing client component
 
 import Pricing from './Pricing';
+import { createServerClient } from '@/lib/supabase/server';
 
 const FALLBACK_PACKAGES = [
   {
@@ -33,23 +34,32 @@ const FALLBACK_IG = { username: 'rdn_riifin_cam', url: 'https://instagram.com/rd
 
 async function getData() {
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-  if (!supabaseUrl || supabaseUrl.includes('your-project')) {
+  const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+  if (!supabaseUrl || !serviceKey || supabaseUrl.includes('your-project')) {
     return { packages: FALLBACK_PACKAGES, ig: FALLBACK_IG };
   }
 
   try {
-    const base = process.env.VERCEL_URL
-      ? `https://${process.env.VERCEL_URL}`
-      : 'http://localhost:3000';
+    const supabase = createServerClient();
+    const [pkgQuery, settingsQuery] = await Promise.all([
+      supabase
+        .from('pricing_packages')
+        .select('id, package_number, name, price, description, estimated_time')
+        .eq('is_published', true)
+        .order('package_number', { ascending: true }),
+      supabase
+        .from('site_settings')
+        .select('instagram_username, instagram_url')
+        .single(),
+    ]);
 
-    const res = await fetch(`${base}/api/pricing`, { next: { revalidate: 60 } });
-    if (!res.ok) return { packages: FALLBACK_PACKAGES, ig: FALLBACK_IG };
+    const packages = pkgQuery.data ?? [];
+    const settings = settingsQuery.data;
 
-    const data = await res.json();
     return {
-      packages: data.packages?.length > 0 ? data.packages : FALLBACK_PACKAGES,
-      ig: data.instagram
-        ? { username: data.instagram.instagram_username, url: data.instagram.instagram_url }
+      packages: packages.length > 0 ? packages : FALLBACK_PACKAGES,
+      ig: settings
+        ? { username: settings.instagram_username, url: settings.instagram_url }
         : FALLBACK_IG,
     };
   } catch {

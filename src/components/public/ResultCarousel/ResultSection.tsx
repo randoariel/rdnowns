@@ -3,6 +3,7 @@
 
 import ResultCarousel from './ResultCarousel';
 import { getSoftwareSkills } from '@/lib/softwareSkills';
+import { createServerClient } from '@/lib/supabase/server';
 
 const FALLBACK_ITEMS = [
   {
@@ -26,27 +27,40 @@ const FALLBACK_IG = { username: 'rdn_riifin_cam', url: 'https://instagram.com/rd
 
 async function getData() {
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-  if (!supabaseUrl || supabaseUrl.includes('your-project')) {
+  const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+  if (!supabaseUrl || !serviceKey || supabaseUrl.includes('your-project')) {
     const skills = await getSoftwareSkills();
     return { items: FALLBACK_ITEMS, ig: FALLBACK_IG, skills };
   }
 
   try {
-    const base = process.env.VERCEL_URL
-      ? `https://${process.env.VERCEL_URL}`
-      : 'http://localhost:3000';
-
-    const [resultsRes, settingsRes, skills] = await Promise.all([
-      fetch(`${base}/api/results`, { cache: 'no-store' }),
-      fetch(`${base}/api/settings`, { cache: 'no-store' }),
+    const supabase = createServerClient();
+    const [resultsQuery, settingsQuery, skills] = await Promise.all([
+      supabase
+        .from('portfolio_results')
+        .select('*')
+        .eq('is_published', true)
+        .order('sort_order', { ascending: true }),
+      supabase
+        .from('site_settings')
+        .select('instagram_username, instagram_url')
+        .single(),
       getSoftwareSkills(),
     ]);
 
-    const items = resultsRes.ok ? await resultsRes.json() : [];
-    const settings = settingsRes.ok ? await settingsRes.json() : null;
+    const items = (resultsQuery.data ?? []).map((row) => ({
+      id: row.id,
+      thumbnail_url: row.thumbnail_url,
+      project_url: row.project_url,
+      title: row.title || 'Untitled Project',
+      is_pinned: row.is_pinned !== false,
+      sort_order: row.sort_order,
+    }));
+
+    const settings = settingsQuery.data;
 
     return {
-      items: items ?? [],
+      items: items.length > 0 ? items : FALLBACK_ITEMS,
       ig: settings
         ? { username: settings.instagram_username, url: settings.instagram_url }
         : FALLBACK_IG,
@@ -54,7 +68,7 @@ async function getData() {
     };
   } catch {
     const skills = await getSoftwareSkills();
-    return { items: [], ig: FALLBACK_IG, skills };
+    return { items: FALLBACK_ITEMS, ig: FALLBACK_IG, skills };
   }
 }
 
