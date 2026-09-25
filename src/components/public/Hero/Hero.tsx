@@ -35,9 +35,6 @@ export default function Hero() {
         </span>
       </div>
 
-      {/* TURA-style section number bottom-left */}
-      <span className={styles.sectionNumber} aria-hidden="true">.01</span>
-
       {/* Vertical scroll hint right side */}
       <div className={styles.sideHint} aria-hidden="true">
         <div className={styles.sideHintLine} />

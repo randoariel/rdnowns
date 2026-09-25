@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import styles from './Pricing.module.css';
+import LiquidGlassButton from '@/components/public/LiquidGlassButton/LiquidGlassButton';
 
 export interface PricingPackage {
   id: string;
@@ -127,14 +128,21 @@ export default function Pricing({ packages, instagramUrl, instagramUsername }: P
                   <span>{pkg.estimated_time}</span>
                 </div>
 
-                <button
-                  className={`${styles.cardCta} ${isFeatured ? styles.cardCtaSolid : styles.cardCtaOutline}`}
-                  onClick={() => handleGet(pkg)}
-                  type="button"
-                  aria-label={`Pesan paket ${pkg.name}`}
-                >
-                  GET
-                </button>
+                <div style={{ marginTop: 'var(--space-2)' }}>
+                  <LiquidGlassButton
+                    onClick={() => handleGet(pkg)}
+                    block={true}
+                    featured={isFeatured}
+                    ariaLabel={`Pesan paket ${pkg.name}`}
+                    icon={
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+                        <polyline points="20 6 9 17 4 12" />
+                      </svg>
+                    }
+                  >
+                    GET <span aria-hidden="true" className={styles.arrowHint}>→</span>
+                  </LiquidGlassButton>
+                </div>
 
                 {toast?.type === 'success' && activeToastPkg === pkg.id && (
                   <div className={styles.toast} role="status" aria-live="polite">
@@ -156,8 +164,6 @@ export default function Pricing({ packages, instagramUrl, instagramUsername }: P
           })}
         </div>
       </div>
-
-      <span className={styles.sectionNumber} aria-hidden="true">.03</span>
     </section>
   );
 }

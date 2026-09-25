@@ -1,6 +1,6 @@
 .footer {
-  background-color: var(--surface);
-  border-top: 1px solid var(--border);
+  background-color: #000000;
+  border-top: none;
 }
 
 .inner {

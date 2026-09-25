@@ -1,9 +1,9 @@
 .section {
   padding-block: var(--section-py-mobile);
-  background-color: var(--bg);
+  background: linear-gradient(180deg, #101114 0%, #090a0d 100%);
   overflow: hidden;
   position: relative;
-  border-top: 1px solid var(--border);
+  border-top: none;
 }
 
 .sectionLabel {

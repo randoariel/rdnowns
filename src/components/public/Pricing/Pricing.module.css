@@ -4,8 +4,8 @@
   flex-direction: column;
   justify-content: center;
   padding-block: var(--section-py-mobile);
-  background-color: var(--bg);
-  border-top: 1px solid var(--border);
+  background: linear-gradient(180deg, #090a0d 0%, #040406 100%);
+  border-top: none;
   position: relative;
 }
 

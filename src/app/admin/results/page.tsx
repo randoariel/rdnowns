@@ -107,6 +107,7 @@ export default function ResultsPage() {
         <nav className={styles.adminNav} aria-label="Admin navigation">
           <Link href="/admin" className={styles.adminNavLink}>Overview</Link>
           <Link href="/admin/results" className={`${styles.adminNavLink} ${styles.adminNavLinkActive}`}>Results</Link>
+          <Link href="/admin/skills" className={styles.adminNavLink}>Software Skills</Link>
           <Link href="/admin/pricing" className={styles.adminNavLink}>Pricing</Link>
           <Link href="/admin/instagram" className={styles.adminNavLink}>Instagram</Link>
           <Link href="/admin/settings" className={styles.adminNavLink}>Settings</Link>
