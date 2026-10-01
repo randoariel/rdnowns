@@ -63,6 +63,7 @@
   gap: var(--space-3);
   width: 100%;
   margin-bottom: var(--space-6);
+  /* ponytail: no fixed height on mobile; items control own height */
 }
 
 /* Base Panel */
@@ -88,9 +89,10 @@
   border-color: var(--border-strong);
 }
 
-/* Active / Focus Panel state */
+/* Active / Focus Panel state — portrait 3:4 */
 .item.active {
-  height: 340px;
+  aspect-ratio: 3 / 4;
+  height: auto;
   border-color: rgba(255, 255, 255, 0.3);
   box-shadow: 0 16px 32px -8px rgba(0, 0, 0, 0.6);
 }
@@ -193,6 +195,20 @@
 }
 
 .item.zoomOut .overlay {
+  opacity: 0.15;
+}
+
+/* Non-3:4 images show blurred bg immediately when active (no separate zoom step) */
+.item.active.autoZoomOut .posterBlurredBg {
+  opacity: 1;
+}
+
+.item.active.autoZoomOut .thumb {
+  object-fit: contain;
+  transform: scale(0.84);
+}
+
+.item.active.autoZoomOut .overlay {
   opacity: 0.15;
 }
 
@@ -497,7 +513,7 @@
   color: var(--text-faint);
 }
 
-/* Desktop & Tablet: Horizontal Accordion */
+/* Desktop & Tablet: Horizontal Accordion — portrait 3:4 panels */
 @media (min-width: 768px) {
   .section {
     padding-block: var(--section-py-desktop);
@@ -505,7 +521,9 @@
 
   .accordion {
     flex-direction: row;
-    height: 480px;
+    /* Height driven by portrait 3:4 of the widest active panel */
+    aspect-ratio: unset;
+    height: 520px;
     align-items: stretch;
     gap: var(--space-3);
   }
@@ -514,11 +532,13 @@
     height: auto;
     flex: 1;
     min-width: 0;
+    aspect-ratio: unset;
   }
 
   .item.active {
     height: auto;
-    flex: 3.5;
+    flex: 3;
+    aspect-ratio: unset;
   }
 
   .thumb {

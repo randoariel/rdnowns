@@ -25,7 +25,7 @@ export default function LiquidGlassButton({
   hasPopup,
 }: Props) {
   const btnRef = useRef<HTMLButtonElement>(null);
-  const [coords, setCoords] = useState({ x: '50%', y: '50%', tiltX: 0, tiltY: 0 });
+  const [coords, setCoords] = useState({ x: '50%', y: '50%', tiltX: 0, tiltY: 0, magX: 0, magY: 0 });
 
   function handleMouseMove(e: React.MouseEvent<HTMLButtonElement>) {
     if (!btnRef.current) return;
@@ -42,11 +42,17 @@ export default function LiquidGlassButton({
     const tiltX = -(centerY / (rect.height / 2)) * 8;
     const tiltY = (centerX / (rect.width / 2)) * 8;
 
+    // Magnetic pull toward cursor (max 4px)
+    const magX = (centerX / (rect.width / 2)) * 4;
+    const magY = (centerY / (rect.height / 2)) * 4;
+
     setCoords({
       x: `${xPercent.toFixed(1)}%`,
       y: `${yPercent.toFixed(1)}%`,
       tiltX,
       tiltY,
+      magX,
+      magY,
     });
   }
 
@@ -56,6 +62,8 @@ export default function LiquidGlassButton({
       y: '50%',
       tiltX: 0,
       tiltY: 0,
+      magX: 0,
+      magY: 0,
     });
   }
 
@@ -77,6 +85,8 @@ export default function LiquidGlassButton({
         ['--mouse-y' as string]: coords.y,
         ['--tilt-x' as string]: `${coords.tiltX}deg`,
         ['--tilt-y' as string]: `${coords.tiltY}deg`,
+        transform: `translate3d(${coords.magX}px, ${coords.magY}px, 0)`,
+        transition: 'transform 0.2s cubic-bezier(0.2, 0, 0.2, 1)',
       } as React.CSSProperties}
       aria-label={ariaLabel}
       aria-haspopup={hasPopup}

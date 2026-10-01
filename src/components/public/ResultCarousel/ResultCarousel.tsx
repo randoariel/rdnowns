@@ -1,8 +1,44 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import styles from './ResultCarousel.module.css';
 import LiquidGlassButton from '@/components/public/LiquidGlassButton/LiquidGlassButton';
+import { useScrollReveal } from '@/hooks/useScrollReveal';
+
+function CountUpIndex({ target }: { target: number }) {
+  const [count, setCount] = useState(0);
+  const ref = useRef<HTMLSpanElement>(null);
+  const animated = useRef(false);
+
+  useEffect(() => {
+    if (animated.current) return;
+    const el = ref.current;
+    if (!el) return;
+
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting && !animated.current) {
+          animated.current = true;
+          const duration = 600;
+          const start = performance.now();
+          const step = (now: number) => {
+            const progress = Math.min((now - start) / duration, 1);
+            setCount(Math.floor(progress * target));
+            if (progress < 1) requestAnimationFrame(step);
+            else setCount(target);
+          };
+          requestAnimationFrame(step);
+          observer.disconnect();
+        }
+      },
+      { threshold: 0.5 }
+    );
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, [target]);
+
+  return <span ref={ref}>{String(count).padStart(2, '0')}</span>;
+}
 
 export interface PortfolioItem {
   id: string;
@@ -88,8 +124,6 @@ export default function ResultCarousel({ items, instagramUsername, instagramUrl 
   const hasMoreThan5 = filteredItems.length > 5;
 
   const [aspectRatios, setAspectRatios] = useState<Record<string, number>>({});
-  const [mobileZoomOutIndex, setMobileZoomOutIndex] = useState<number | null>(null);
-  const [hoveredZoomOutIndex, setHoveredZoomOutIndex] = useState<number | null>(null);
 
   // Measure loaded images to know if they match 3:4 (0.75 +- 0.05)
   const handleImageLoad = (id: string, e: React.SyntheticEvent<HTMLImageElement>) => {
@@ -102,34 +136,20 @@ export default function ResultCarousel({ items, instagramUsername, instagramUrl 
     }
   };
 
-  const handleItemClick = (e: React.MouseEvent<HTMLAnchorElement>, index: number, item: PortfolioItem) => {
-    const isMobile = typeof window !== 'undefined' && window.innerWidth < 768;
-    if (isMobile) {
-      const ratio = aspectRatios[item.id];
-      const is3by4 = ratio ? ratio >= 0.70 && ratio <= 0.80 : true;
-
-      // STEP 1: Klik 1 untuk buka garis (expand accordion)
-      if (activeIndex !== index) {
-        e.preventDefault();
-        setActiveIndex(index);
-        setMobileZoomOutIndex(null);
-        return;
-      }
-
-      // STEP 2: Jika bukan 3:4 dan belum zoom out -> Klik 2 untuk zoom out (reveal latar blur gelap)
-      if (!is3by4 && mobileZoomOutIndex !== index) {
-        e.preventDefault();
-        setMobileZoomOutIndex(index);
-        return;
-      }
-
-      // STEP 3 (atau STEP 2 jika sudah 3:4): Buka link project
-      // Let standard anchor navigation proceed
+  const handleItemClick = (e: React.MouseEvent<HTMLAnchorElement>, index: number) => {
+    // Click 1: expand, Click 2: navigate
+    if (activeIndex !== index) {
+      e.preventDefault();
+      setActiveIndex(index);
+      return;
     }
+    // Already active — let anchor navigate
   };
 
+  const sectionRef = useScrollReveal<HTMLElement>({ threshold: 0.08 });
+
   return (
-    <section id="result" className={styles.section} aria-label="Portfolio">
+    <section ref={sectionRef} id="result" className={`${styles.section} reveal-fade-up`} aria-label="Portfolio">
       <div className="container">
         <span className={`label ${styles.sectionLabel}`}>Result</span>
 
@@ -175,10 +195,7 @@ export default function ResultCarousel({ items, instagramUsername, instagramUrl 
         >
           {carouselItems.map((item, i) => {
             const isActive = activeIndex === i;
-            const ratio = aspectRatios[item.id];
-            // ponytail: default true (assume 3:4) until image actually loads and proves otherwise
-            const is3by4 = ratio ? ratio >= 0.70 && ratio <= 0.80 : true;
-            const isZoomOut = (!is3by4 && (hoveredZoomOutIndex === i || mobileZoomOutIndex === i));
+            const autoZoom = isActive;
 
             return (
               <a
@@ -190,16 +207,12 @@ export default function ResultCarousel({ items, instagramUsername, instagramUrl 
                   ${styles.item} 
                   ${selectedCategory === 'graphic' ? styles.graphicAspect : ''}
                   ${isActive ? styles.active : ''}
-                  ${isZoomOut ? styles.zoomOut : ''}
+                  ${autoZoom ? styles.autoZoomOut : ''}
                 `}
                 role="listitem"
                 aria-label={`${item.title || `Portofolio ${i + 1}`} — lihat project`}
-                onClick={(e) => handleItemClick(e, i, item)}
-                onMouseEnter={() => {
-                  setActiveIndex(i);
-                  if (!is3by4) setHoveredZoomOutIndex(i);
-                }}
-                onMouseLeave={() => setHoveredZoomOutIndex(null)}
+                onClick={(e) => handleItemClick(e, i)}
+                onMouseEnter={() => setActiveIndex(i)}
                 onFocus={() => setActiveIndex(i)}
               >
                 <div className={styles.imageWrapper}>
@@ -248,18 +261,14 @@ export default function ResultCarousel({ items, instagramUsername, instagramUrl 
 
                 <div className={styles.panelContent}>
                   <span className={styles.indexNumber}>
-                    {String(i + 1).padStart(2, '0')}
+                    <CountUpIndex target={i + 1} />
                   </span>
                   <div className={styles.viewBadge}>
                     <span>
                       {item.title
                         ? `${item.title} ↗`
                         : isActive
-                        ? isZoomOut
-                          ? 'Buka Link Project ↗'
-                          : !is3by4
-                          ? 'Tap untuk Zoom Out'
-                          : 'Buka Link Project ↗'
+                        ? 'Buka Link Project ↗'
                         : 'Tap untuk Perbesar'}
                     </span>
                   </div>

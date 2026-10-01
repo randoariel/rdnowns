@@ -1,3 +1,6 @@
+'use client';
+
+import { useScrollReveal } from '@/hooks/useScrollReveal';
 import styles from './Footer.module.css';
 
 const NAV_LINKS = [
@@ -8,9 +11,10 @@ const NAV_LINKS = [
 
 export default function Footer() {
   const year = new Date().getFullYear();
+  const footerRef = useScrollReveal<HTMLElement>({ threshold: 0.1 });
 
   return (
-    <footer className={styles.footer}>
+    <footer ref={footerRef} className={`${styles.footer} reveal-fade-up`}>
       <div className={`container ${styles.inner}`}>
         <div className={styles.top}>
           <div className={styles.brand}>

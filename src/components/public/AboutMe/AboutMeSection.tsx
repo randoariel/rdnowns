@@ -1,8 +1,10 @@
 'use client';
 
+import { useRef, useCallback } from 'react';
 import styles from './AboutMe.module.css';
 import SoftwareDockCarousel, { type SoftwareSkillItem } from '../ResultCarousel/SoftwareDockCarousel';
 import LiquidGlassButton from '../LiquidGlassButton/LiquidGlassButton';
+import { useScrollReveal } from '@/hooks/useScrollReveal';
 
 export interface AboutMeData {
   name: string;
@@ -44,12 +46,50 @@ interface Props {
 export default function AboutMeSection({ data, softwareSkills = [] }: Props) {
   const profile = { ...ABOUT_ME_PLACEHOLDER, ...data };
 
+  // Scroll reveal for the whole section
+  const sectionRef = useScrollReveal<HTMLElement>({ threshold: 0.1 });
+
+  // Scroll reveal with stagger for skills
+  const skillsRef = useScrollReveal<HTMLDivElement>({
+    threshold: 0.2,
+    staggerMs: 60,
+    staggerSelector: `.${styles.skillItem}`,
+  });
+
+  // 3D tilt on card
+  const cardRef = useRef<HTMLDivElement>(null);
+
+  const handleCardMouseMove = useCallback((e: React.MouseEvent<HTMLDivElement>) => {
+    if (!cardRef.current) return;
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+    const rect = cardRef.current.getBoundingClientRect();
+    const x = (e.clientX - rect.left) / rect.width - 0.5;
+    const y = (e.clientY - rect.top) / rect.height - 0.5;
+    cardRef.current.style.transform = `perspective(800px) rotateX(${-y * 6}deg) rotateY(${x * 6}deg)`;
+  }, []);
+
+  const handleCardMouseLeave = useCallback(() => {
+    if (!cardRef.current) return;
+    cardRef.current.style.transform = 'perspective(800px) rotateX(0deg) rotateY(0deg)';
+  }, []);
+
   return (
-    <section id="about" className={styles.section} aria-label="About Me">
+    <section
+      ref={sectionRef}
+      id="about"
+      className={`${styles.section} reveal-fade-up`}
+      aria-label="About Me"
+    >
       <div className="container">
         <span className={`label ${styles.sectionLabel}`}>About Me</span>
 
-        <div className={styles.aboutCard}>
+        <div
+          ref={cardRef}
+          className={styles.aboutCard}
+          onMouseMove={handleCardMouseMove}
+          onMouseLeave={handleCardMouseLeave}
+          style={{ transition: 'transform 0.15s ease-out', willChange: 'transform' }}
+        >
           <div className={styles.profileHeader}>
             <div className={styles.taglineBadge}>
               <span className={styles.taglineDot} />
@@ -121,12 +161,12 @@ export default function AboutMeSection({ data, softwareSkills = [] }: Props) {
             </a>
           </div>
 
-          {/* Core Competencies badges */}
-          <div className={styles.skillsGroup}>
+          {/* Core Competencies badges — staggered reveal */}
+          <div ref={skillsRef} className={`${styles.skillsGroup} reveal-fade-up`}>
             <span className={styles.skillsLabel}>Core Competencies</span>
             <div className={styles.skillsList}>
               {profile.skills.map((skill) => (
-                <span key={skill} className={styles.skillItem}>
+                <span key={skill} className={`${styles.skillItem} reveal-stagger-child`}>
                   {skill}
                 </span>
               ))}
