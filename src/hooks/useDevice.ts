@@ -10,11 +10,12 @@ export function useDevice() {
     const ua = navigator.userAgent;
     const isMobileUA = /Android|iPhone|iPad|iPod|Opera Mini|IEMobile|WPDesktop/i.test(ua);
     const hasCoarsePointer = window.matchMedia("(pointer: coarse)").matches;
+    const isSmallScreen = window.innerWidth <= 768;
 
-    // ponytail: desktop with touch screen defaults to desktop if fine pointer exists; add hybrid mode if needed later.
-    setIsMobile(isMobileUA || hasCoarsePointer);
+    setIsMobile(isMobileUA || hasCoarsePointer || isSmallScreen);
     setIsReady(true);
   }, []);
 
   return { isMobile, isDesktop: isReady ? !isMobile : false, isReady };
 }
+

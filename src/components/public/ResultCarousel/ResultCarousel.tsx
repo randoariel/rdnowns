@@ -137,13 +137,13 @@ export default function ResultCarousel({ items, instagramUsername, instagramUrl 
   };
 
   const handleItemClick = (e: React.MouseEvent<HTMLAnchorElement>, index: number) => {
-    // Click 1: expand, Click 2: navigate
+    // Mobile 2-step click interaction:
+    // Click 1: expand & on/active (prevent link)
+    // Click 2: if already active -> open link
     if (activeIndex !== index) {
       e.preventDefault();
       setActiveIndex(index);
-      return;
     }
-    // Already active — let anchor navigate
   };
 
   const sectionRef = useScrollReveal<HTMLElement>({ threshold: 0.08 });
@@ -191,7 +191,12 @@ export default function ResultCarousel({ items, instagramUsername, instagramUrl 
           className={styles.accordion}
           role="list"
           aria-label={`Portfolio karya ${selectedCategory === 'graphic' ? 'Graphic Design' : 'Video Editor'}`}
-          onMouseLeave={() => setActiveIndex(0)}
+          onMouseLeave={() => {
+            // Only reset to 0 on desktop pointer
+            if (window.matchMedia('(pointer: fine)').matches) {
+              setActiveIndex(0);
+            }
+          }}
         >
           {carouselItems.map((item, i) => {
             const isActive = activeIndex === i;
@@ -206,13 +211,17 @@ export default function ResultCarousel({ items, instagramUsername, instagramUrl 
                 className={`
                   ${styles.item} 
                   ${selectedCategory === 'graphic' ? styles.graphicAspect : ''}
-                  ${isActive ? styles.active : ''}
+                  ${isActive ? styles.active : styles.inactive}
                   ${autoZoom ? styles.autoZoomOut : ''}
                 `}
                 role="listitem"
-                aria-label={`${item.title || `Portofolio ${i + 1}`} — lihat project`}
+                aria-label={`${item.title || `Portofolio ${i + 1}`} — ${isActive ? 'buka project' : 'ketuk untuk pratinjau'}`}
                 onClick={(e) => handleItemClick(e, i)}
-                onMouseEnter={() => setActiveIndex(i)}
+                onMouseEnter={() => {
+                  if (window.matchMedia('(pointer: fine)').matches) {
+                    setActiveIndex(i);
+                  }
+                }}
                 onFocus={() => setActiveIndex(i)}
               >
                 <div className={styles.imageWrapper}>
@@ -260,16 +269,20 @@ export default function ResultCarousel({ items, instagramUsername, instagramUrl 
                 </div>
 
                 <div className={styles.panelContent}>
-                  <span className={styles.indexNumber}>
-                    <CountUpIndex target={i + 1} />
-                  </span>
+                  <div className={styles.topInfo}>
+                    <span className={styles.indexNumber}>
+                      <CountUpIndex target={i + 1} />
+                    </span>
+                    <span className={`${styles.statusPill} ${isActive ? styles.statusOn : styles.statusOff}`}>
+                      {isActive ? '● ON / ACTIVE' : '○ OFF'}
+                    </span>
+                  </div>
+
                   <div className={styles.viewBadge}>
                     <span>
-                      {item.title
-                        ? `${item.title} ↗`
-                        : isActive
-                        ? 'Buka Link Project ↗'
-                        : 'Tap untuk Perbesar'}
+                      {isActive
+                        ? `${item.title ? item.title + ' — ' : ''}Buka Link Project ↗`
+                        : 'Tap 1x untuk Buka'}
                     </span>
                   </div>
                 </div>

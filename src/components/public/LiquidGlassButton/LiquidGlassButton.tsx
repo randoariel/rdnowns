@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useRef, useState } from 'react';
+import React, { useRef, useState, useEffect } from 'react';
 import styles from './LiquidGlassButton.module.css';
 
 interface Props {
@@ -56,7 +56,27 @@ export default function LiquidGlassButton({
     });
   }
 
-  function handleMouseLeave() {
+  function handleTouchMove(e: React.TouchEvent<HTMLButtonElement>) {
+    if (!btnRef.current || e.touches.length === 0) return;
+    const touch = e.touches[0];
+    const rect = btnRef.current.getBoundingClientRect();
+    const relativeX = touch.clientX - rect.left;
+    const relativeY = touch.clientY - rect.top;
+
+    const xPercent = Math.max(0, Math.min(100, (relativeX / rect.width) * 100));
+    const yPercent = Math.max(0, Math.min(100, (relativeY / rect.height) * 100));
+
+    setCoords({
+      x: `${xPercent.toFixed(1)}%`,
+      y: `${yPercent.toFixed(1)}%`,
+      tiltX: 0,
+      tiltY: 0,
+      magX: 0,
+      magY: 0,
+    });
+  }
+
+  function handleReset() {
     setCoords({
       x: '50%',
       y: '50%',
@@ -73,7 +93,9 @@ export default function LiquidGlassButton({
       type="button"
       onClick={onClick}
       onMouseMove={handleMouseMove}
-      onMouseLeave={handleMouseLeave}
+      onMouseLeave={handleReset}
+      onTouchMove={handleTouchMove}
+      onTouchEnd={handleReset}
       className={`
         ${styles.liquidBtn} 
         ${block ? styles.blockWidth : ''} 
@@ -98,7 +120,7 @@ export default function LiquidGlassButton({
       <div className={styles.fluidBlob1} aria-hidden="true" />
       <div className={styles.fluidBlob2} aria-hidden="true" />
 
-      {/* 3. Interactive Mouse-Tracking Core Liquid Orb Light */}
+      {/* 3. Interactive Mouse/Touch-Tracking Core Liquid Orb Light */}
       <div className={styles.mouseMagneticOrb} aria-hidden="true" />
 
       {/* 4. Frosted Glass Layer with Heavy Backdrop Blur */}
@@ -118,3 +140,4 @@ export default function LiquidGlassButton({
     </button>
   );
 }
+
