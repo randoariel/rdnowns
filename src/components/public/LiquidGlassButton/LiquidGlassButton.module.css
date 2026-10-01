@@ -8,20 +8,22 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  padding: 14px 34px;
-  /* Darker base body for high contrast on black background */
-  background: rgba(8, 9, 12, 0.88);
+  padding: 10px 24px;
+  background: rgba(14, 16, 20, 0.85);
   border-radius: 9999px;
   cursor: pointer;
   text-decoration: none;
   border: 1px solid rgba(255, 255, 255, 0.16);
   outline: none;
   font-family: inherit;
-  font-size: var(--font-size-sm);
+  font-size: var(--font-size-xs);
   font-weight: 600;
-  letter-spacing: 0.05em;
+  letter-spacing: 0.06em;
   color: #ffffff;
   overflow: hidden;
+  isolation: isolate;
+  -webkit-mask-image: -webkit-radial-gradient(white, black);
+  mask-image: radial-gradient(white, black);
   user-select: none;
   -webkit-user-select: none;
   transform-style: preserve-3d;
@@ -32,21 +34,18 @@
     border-color 300ms ease,
     box-shadow 300ms ease;
 
-  /* Crisp, defined contrast shadow instead of washed-out flood */
   box-shadow: 
-    0 18px 40px -8px rgba(0, 0, 0, 0.95),
-    0 0 20px -2px rgba(185, 95, 255, 0.18),
-    0 1px 0 rgba(255, 255, 255, 0.35) inset,
+    0 10px 25px -5px rgba(0, 0, 0, 0.8),
+    0 1px 0 rgba(255, 255, 255, 0.25) inset,
     0 -1px 0 rgba(0, 0, 0, 0.8) inset;
 }
 
 .liquidBtn:hover {
-  border-color: rgba(255, 255, 255, 0.4);
+  border-color: rgba(255, 255, 255, 0.35);
   box-shadow: 
-    0 24px 50px -10px rgba(0, 0, 0, 0.98),
-    0 0 32px 0 rgba(195, 90, 255, 0.32),
-    0 0 22px 1px rgba(70, 190, 255, 0.25),
-    0 1.5px 0 rgba(255, 255, 255, 0.65) inset,
+    0 14px 30px -6px rgba(0, 0, 0, 0.9),
+    0 0 20px 0 rgba(255, 255, 255, 0.12),
+    0 1.5px 0 rgba(255, 255, 255, 0.5) inset,
     0 -1px 0 rgba(0, 0, 0, 0.9) inset;
 }
 

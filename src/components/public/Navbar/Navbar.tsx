@@ -5,8 +5,8 @@ import styles from './Navbar.module.css';
 
 const NAV_LINKS = [
   { href: '#home',   label: 'HOME' },
+  { href: '#about',  label: 'ABOUT' },
   { href: '#result', label: 'RESULT' },
-  { href: '#get',    label: 'GET' },
 ];
 
 export default function Navbar() {
@@ -21,7 +21,7 @@ export default function Navbar() {
   }, []);
 
   useEffect(() => {
-    const sections = ['home', 'result', 'get'];
+    const sections = ['home', 'about', 'result'];
 
     observerRef.current = new IntersectionObserver(
       (entries) => {

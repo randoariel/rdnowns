@@ -23,14 +23,32 @@ export async function GET() {
       return NextResponse.json({ error: 'Gagal memuat data.' }, { status: 500 });
     }
 
-    const sanitized = (data ?? []).map((row) => ({
-      id: row.id,
-      thumbnail_url: row.thumbnail_url,
-      project_url: row.project_url,
-      title: row.title || 'Untitled Project',
-      is_pinned: row.is_pinned !== false, // default true if column not set
-      sort_order: row.sort_order,
-    }));
+    const sanitized = (data ?? []).map((row) => {
+      let resolvedCategory = row.category;
+      let cleanTitle = row.title || 'Untitled Project';
+
+      if (!resolvedCategory) {
+        if (cleanTitle.startsWith('[GRAPHIC]')) {
+          resolvedCategory = 'graphic';
+          cleanTitle = cleanTitle.replace(/^\[GRAPHIC\]\s*/, '');
+        } else if (cleanTitle.startsWith('[VIDEO]')) {
+          resolvedCategory = 'video';
+          cleanTitle = cleanTitle.replace(/^\[VIDEO\]\s*/, '');
+        } else {
+          resolvedCategory = 'video';
+        }
+      }
+
+      return {
+        id: row.id,
+        thumbnail_url: row.thumbnail_url,
+        project_url: row.project_url,
+        title: cleanTitle,
+        category: resolvedCategory,
+        is_pinned: Boolean(row.is_pinned),
+        sort_order: row.sort_order,
+      };
+    });
 
     return NextResponse.json(sanitized);
   } catch {

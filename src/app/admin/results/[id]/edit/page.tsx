@@ -24,6 +24,7 @@ export default function EditResultPage() {
 
   const [item, setItem] = useState<ResultItem | null>(null);
   const [title, setTitle] = useState('');
+  const [category, setCategory] = useState('graphic');
   const [projectUrl, setProjectUrl] = useState('');
   const [isPinned, setIsPinned] = useState(false);
   const [isPublished, setIsPublished] = useState(false);
@@ -37,11 +38,12 @@ export default function EditResultPage() {
 
   const fetchItem = useCallback(async () => {
     const res = await fetch('/api/admin/results');
-    const data: ResultItem[] = await res.json();
+    const data: Array<ResultItem & { category?: string }> = await res.json();
     const found = data.find((i) => i.id === id);
     if (found) {
       setItem(found);
       setTitle(found.title || '');
+      setCategory(found.category || 'graphic');
       setProjectUrl(found.project_url);
       setIsPinned(found.is_pinned !== false);
       setIsPublished(found.is_published);
@@ -79,6 +81,7 @@ export default function EditResultPage() {
 
     const updateBody: Record<string, unknown> = {
       title: title.trim(),
+      category,
       project_url: projectUrl,
       is_pinned: isPinned,
       is_published: isPublished,
@@ -131,7 +134,7 @@ export default function EditResultPage() {
         <nav className={styles.adminNav}>
           <Link href="/admin" className={styles.adminNavLink}>Overview</Link>
           <Link href="/admin/results" className={`${styles.adminNavLink} ${styles.adminNavLinkActive}`}>Results</Link>
-          <Link href="/admin/pricing" className={styles.adminNavLink}>Pricing</Link>
+          <Link href="/admin/skills" className={styles.adminNavLink}>Software Skills</Link>
           <Link href="/admin/instagram" className={styles.adminNavLink}>Instagram</Link>
           <Link href="/admin/settings" className={styles.adminNavLink}>Settings</Link>
         </nav>
@@ -147,7 +150,14 @@ export default function EditResultPage() {
             <img
               src={previewUrl}
               alt="Thumbnail saat ini"
-              style={{ width: 160, height: 160, objectFit: 'cover', borderRadius: 'var(--radius-md)', background: 'var(--surface-2)' }}
+              style={{ 
+                width: category === 'graphic' ? 150 : 200, 
+                height: category === 'graphic' ? 200 : 120, 
+                objectFit: 'cover', 
+                borderRadius: 'var(--radius-md)', 
+                background: 'var(--surface-2)',
+                border: '1px solid rgba(255,255,255,0.1)'
+              }}
             />
             <button
               type="button"
@@ -172,7 +182,21 @@ export default function EditResultPage() {
           </div>
 
           <div className={styles.field}>
-            <label htmlFor="edit-title" className={styles.label}>Judul Video / Project</label>
+            <label htmlFor="edit-category" className={styles.label}>Kategori Karya</label>
+            <select
+              id="edit-category"
+              className={styles.input}
+              value={category}
+              onChange={(e) => setCategory(e.target.value)}
+              style={{ background: 'var(--surface-2)', color: 'var(--text)' }}
+            >
+              <option value="graphic">Graphic Design</option>
+              <option value="video">Video Editor</option>
+            </select>
+          </div>
+
+          <div className={styles.field}>
+            <label htmlFor="edit-title" className={styles.label}>Judul Video / Desain</label>
             <input
               id="edit-title"
               type="text"

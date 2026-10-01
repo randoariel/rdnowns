@@ -48,13 +48,23 @@ export default function InstagramAdminPage() {
     <div className={styles.adminLayout}>
       <aside className={styles.adminSidebar}>
         <div className={styles.adminSidebarBrand}>RDN Admin</div>
-        <nav className={styles.adminNav}>
+        <nav className={styles.adminNav} aria-label="Admin navigation">
           <Link href="/admin" className={styles.adminNavLink}>Overview</Link>
           <Link href="/admin/results" className={styles.adminNavLink}>Results</Link>
-          <Link href="/admin/pricing" className={styles.adminNavLink}>Pricing</Link>
+          <Link href="/admin/skills" className={styles.adminNavLink}>Software Skills</Link>
           <Link href="/admin/instagram" className={`${styles.adminNavLink} ${styles.adminNavLinkActive}`}>Instagram</Link>
           <Link href="/admin/settings" className={styles.adminNavLink}>Settings</Link>
         </nav>
+        <button
+          type="button"
+          onClick={async () => {
+            await fetch('/api/auth/logout', { method: 'POST' });
+            window.location.href = '/admin/login';
+          }}
+          className={styles.linkBtn}
+        >
+          Keluar
+        </button>
       </aside>
 
       <main className={styles.adminContent}>

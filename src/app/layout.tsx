@@ -9,9 +9,14 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-  title: 'RDN — Videografi & Video Editing',
-  description: 'Jasa videografi dan video editing untuk tugas sekolah dan project personal. Lihat portofolio dan pilih paket.',
-  keywords: ['videografi', 'video editing', 'tugas sekolah', 'RDN'],
+  title: 'RDN — Graphic Designer & Video Editor',
+  description: 'Portofolio visual dan jasa video editing serta desain grafis profesional untuk tugas sekolah, branding, dan project personal.',
+  keywords: ['graphic design', 'video editor', 'videografi', 'tugas sekolah', 'RDN', 'creative portfolio'],
+  authors: [{ name: 'RDN' }],
+  robots: {
+    index: true,
+    follow: true,
+  },
   icons: {
     icon: [
       { url: '/favicon.png', type: 'image/png' },
@@ -22,9 +27,16 @@ export const metadata: Metadata = {
     ],
   },
   openGraph: {
-    title: 'RDN — Videografi & Video Editing',
-    description: 'Jasa videografi dan video editing untuk tugas sekolah.',
+    title: 'RDN — Graphic Designer & Video Editor',
+    description: 'Portofolio visual dan jasa video editing serta desain grafis profesional untuk tugas sekolah, branding, dan project personal.',
     type: 'website',
+    locale: 'id_ID',
+    siteName: 'RDN Portfolio',
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'RDN — Graphic Designer & Video Editor',
+    description: 'Portofolio visual dan jasa video editing serta desain grafis profesional.',
   },
 };
 

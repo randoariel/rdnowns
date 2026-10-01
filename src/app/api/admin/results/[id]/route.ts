@@ -33,7 +33,7 @@ export async function PUT(
     }
   }
 
-  const allowed = ['thumbnail_url', 'thumbnail_path', 'project_url', 'title', 'is_pinned', 'sort_order', 'is_published'];
+  const allowed = ['thumbnail_url', 'thumbnail_path', 'project_url', 'title', 'category', 'is_pinned', 'sort_order', 'is_published'];
   const update: Record<string, unknown> = { updated_at: new Date().toISOString() };
   for (const key of allowed) {
     if (key in body) update[key] = body[key];
@@ -41,19 +41,60 @@ export async function PUT(
 
   const supabase = createServerClient();
 
-  // Validate pin limit if setting is_pinned = true
+  // Validate pin limit if setting is_pinned = true (max 5 per category)
   if (body.is_pinned === true) {
+    // get current category of the item if not in body
+    let targetCategory = body.category as string | undefined;
+    if (!targetCategory) {
+      const { data: currentItem } = await supabase
+        .from('portfolio_results')
+        .select('title, category')
+        .eq('id', id)
+        .single();
+      if (currentItem?.category) {
+        targetCategory = currentItem.category;
+      } else if (currentItem?.title?.startsWith('[GRAPHIC]')) {
+        targetCategory = 'graphic';
+      } else {
+        targetCategory = 'video';
+      }
+    }
+
     const { data: pinnedRows } = await supabase
       .from('portfolio_results')
-      .select('id')
+      .select('id, title, category')
       .eq('is_pinned', true)
       .neq('id', id);
-    if ((pinnedRows?.length ?? 0) >= 5) {
-      return NextResponse.json({ error: 'Maksimal 5 item yang dapat di-pin / show off di Result.' }, { status: 400 });
+    
+    const countForCat = (pinnedRows ?? []).filter((r) => {
+      let cat = r.category;
+      if (!cat) {
+        if (r.title?.startsWith('[GRAPHIC]')) cat = 'graphic';
+        else cat = 'video';
+      }
+      return cat === targetCategory;
+    }).length;
+
+    if (countForCat >= 5) {
+      return NextResponse.json({ 
+        error: `Maksimal 5 item yang dapat di-pin untuk kategori ${targetCategory === 'graphic' ? 'Graphic Design' : 'Video Editor'}.` 
+      }, { status: 400 });
     }
   }
 
-  const { error } = await supabase.from('portfolio_results').update(update).eq('id', id);
+  let { error } = await supabase.from('portfolio_results').update(update).eq('id', id);
+
+  if (error && (error.message?.includes('category') || error.code === '42703')) {
+    const fallbackCategory = update.category as string;
+    delete update.category;
+    if (fallbackCategory && typeof update.title === 'string') {
+      const clean = update.title.replace(/^\[(GRAPHIC|VIDEO)\]\s*/i, '');
+      update.title = `[${fallbackCategory.toUpperCase()}] ${clean}`;
+    }
+    const retry = await supabase.from('portfolio_results').update(update).eq('id', id);
+    error = retry.error;
+  }
+
   if (error) return NextResponse.json({ error: 'Gagal memperbarui: ' + error.message }, { status: 500 });
   return NextResponse.json({ ok: true });
 }

@@ -22,10 +22,6 @@ export default function SoftwareDockCarousel({ skills }: Props) {
 
   return (
     <div className={styles.dockContainer} aria-hidden="true">
-      <div className={styles.dockHeader}>
-        <span className={styles.dockLabel}>Workflow & Tools</span>
-      </div>
-
       <div className={styles.macDock}>
         <div className={styles.marqueeTrack}>
           {/* First loop track */}

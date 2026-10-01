@@ -6,10 +6,7 @@
   justify-content: center;
   align-items: center;
   padding-top: 80px;
-  background-color: #121316;
-  background-image: 
-    radial-gradient(circle at 50% 35%, rgba(255, 255, 255, 0.04) 0%, transparent 65%),
-    linear-gradient(180deg, #15161a 0%, #101114 100%);
+  background: transparent;
   overflow: hidden;
 }
 

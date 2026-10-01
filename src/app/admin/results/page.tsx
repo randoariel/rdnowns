@@ -8,6 +8,7 @@ interface ResultItem {
   id: string;
   thumbnail_url: string;
   title: string;
+  category?: string;
   project_url: string;
   sort_order: number;
   is_pinned: boolean;
@@ -17,6 +18,7 @@ interface ResultItem {
 
 export default function ResultsPage() {
   const [items, setItems] = useState<ResultItem[]>([]);
+  const [selectedTab, setSelectedTab] = useState<'all' | 'graphic' | 'video'>('all');
   const [loading, setLoading] = useState(true);
   const [deleteId, setDeleteId] = useState<string | null>(null);
   const [deleting, setDeleting] = useState(false);
@@ -37,13 +39,15 @@ export default function ResultsPage() {
 
   useEffect(() => { fetchItems(); }, [fetchItems]);
 
-  async function togglePin(id: string, current: boolean) {
+  async function togglePin(id: string, current: boolean, category: string = 'video') {
     setError('');
-    // Check if pinning and already 5 pinned
+    // Check if pinning and already 5 pinned for THIS category
     if (!current) {
-      const currentPinnedCount = items.filter(i => i.is_pinned).length;
+      const currentPinnedCount = items.filter(
+        i => i.is_pinned && (i.category || 'video') === category
+      ).length;
       if (currentPinnedCount >= 5) {
-        setError('Maksimal 5 item yang dapat di-pin / show off di Result Carousel.');
+        setError(`Maksimal 5 item yang dapat di-pin untuk kategori ${category === 'graphic' ? 'Graphic Design' : 'Video Editor'}.`);
         return;
       }
     }
@@ -108,7 +112,6 @@ export default function ResultsPage() {
           <Link href="/admin" className={styles.adminNavLink}>Overview</Link>
           <Link href="/admin/results" className={`${styles.adminNavLink} ${styles.adminNavLinkActive}`}>Results</Link>
           <Link href="/admin/skills" className={styles.adminNavLink}>Software Skills</Link>
-          <Link href="/admin/pricing" className={styles.adminNavLink}>Pricing</Link>
           <Link href="/admin/instagram" className={styles.adminNavLink}>Instagram</Link>
           <Link href="/admin/settings" className={styles.adminNavLink}>Settings</Link>
         </nav>
@@ -116,12 +119,39 @@ export default function ResultsPage() {
       </aside>
 
       <main className={styles.adminContent}>
-        <h1 className={styles.adminPageTitle}>Results</h1>
-
-        <div style={{ marginBottom: 'var(--space-5)' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 'var(--space-4)', flexWrap: 'wrap', gap: 'var(--space-3)' }}>
+          <h1 className={styles.adminPageTitle} style={{ margin: 0 }}>Results Management</h1>
           <Link href="/admin/results/new" className={styles.submitBtn}>
-            + Tambah Result
+            + Tambah Karya (Graphic / Video)
           </Link>
+        </div>
+
+        {/* Category Filter Tabs for Admin */}
+        <div style={{ display: 'flex', gap: '8px', marginBottom: 'var(--space-5)' }}>
+          <button
+            type="button"
+            onClick={() => setSelectedTab('all')}
+            className={selectedTab === 'all' ? styles.submitBtn : styles.secondaryBtn}
+            style={{ fontSize: '12px', padding: '6px 14px' }}
+          >
+            Semua ({items.length})
+          </button>
+          <button
+            type="button"
+            onClick={() => setSelectedTab('graphic')}
+            className={selectedTab === 'graphic' ? styles.submitBtn : styles.secondaryBtn}
+            style={{ fontSize: '12px', padding: '6px 14px' }}
+          >
+            Graphic Design ({items.filter(i => (i.category || 'video') === 'graphic').length})
+          </button>
+          <button
+            type="button"
+            onClick={() => setSelectedTab('video')}
+            className={selectedTab === 'video' ? styles.submitBtn : styles.secondaryBtn}
+            style={{ fontSize: '12px', padding: '6px 14px' }}
+          >
+            Video Editor ({items.filter(i => (i.category || 'video') === 'video').length})
+          </button>
         </div>
 
         {error && <p className={styles.error} role="alert">{error}</p>}
@@ -143,7 +173,9 @@ export default function ResultsPage() {
               </tr>
             </thead>
             <tbody>
-              {items.map((item, idx) => (
+              {items
+                .filter(item => selectedTab === 'all' || (item.category || 'video') === selectedTab)
+                .map((item, idx) => (
                 <tr key={item.id}>
                   <td>
                     {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -154,9 +186,23 @@ export default function ResultsPage() {
                     />
                   </td>
                   <td>
-                    <p style={{ fontWeight: 'var(--font-weight-semibold)', color: 'var(--text)', marginBottom: '4px' }}>
-                      {item.title || 'Untitled'}
-                    </p>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '4px' }}>
+                      <span style={{
+                        fontSize: '10px',
+                        padding: '2px 6px',
+                        borderRadius: '4px',
+                        background: (item.category || 'video') === 'graphic' ? 'rgba(59, 130, 246, 0.2)' : 'rgba(168, 85, 247, 0.2)',
+                        color: (item.category || 'video') === 'graphic' ? '#60a5fa' : '#c084fc',
+                        border: '1px solid rgba(255, 255, 255, 0.1)',
+                        textTransform: 'uppercase',
+                        fontWeight: 700,
+                      }}>
+                        {(item.category || 'video') === 'graphic' ? 'GRAPHIC' : 'VIDEO'}
+                      </span>
+                      <p style={{ fontWeight: 'var(--font-weight-semibold)', color: 'var(--text)' }}>
+                        {item.title || 'Untitled'}
+                      </p>
+                    </div>
                     <a
                       href={item.project_url}
                       target="_blank"
@@ -169,7 +215,7 @@ export default function ResultsPage() {
                   <td>
                     <button
                       type="button"
-                      onClick={() => togglePin(item.id, item.is_pinned)}
+                      onClick={() => togglePin(item.id, item.is_pinned, item.category || 'video')}
                       style={{
                         display: 'inline-flex',
                         alignItems: 'center',
@@ -189,9 +235,15 @@ export default function ResultsPage() {
                     </button>
                   </td>
                   <td>
-                    <span className={`${styles.badge} ${item.is_published ? styles.badgePublished : styles.badgeDraft}`}>
-                      {item.is_published ? 'Published' : 'Draft'}
-                    </span>
+                    <button
+                      type="button"
+                      onClick={() => togglePublish(item.id, item.is_published)}
+                      className={`${styles.badge} ${item.is_published ? styles.badgePublished : styles.badgeDraft}`}
+                      style={{ cursor: 'pointer', border: 'none' }}
+                      title="Klik untuk mengubah status Publish / Draft"
+                    >
+                      {item.is_published ? '✓ Published' : '○ Draft'}
+                    </button>
                   </td>
                   <td>
                     <div style={{ display: 'flex', gap: 'var(--space-2)' }}>

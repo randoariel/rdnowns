@@ -38,11 +38,12 @@ body {
   font-weight: var(--font-weight-regular);
   line-height: var(--line-height-normal);
   color: var(--text);
-  background-color: var(--bg);
+  background: linear-gradient(180deg, #1c1e22 0%, #15171a 25%, #0e0f12 55%, #07080a 80%, #020203 100%);
+  background-attachment: fixed;
+  min-height: 100vh;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   overflow-x: hidden;
-  /* Prevent font blurring on subpixel rendering */
   text-rendering: optimizeLegibility;
 }
 

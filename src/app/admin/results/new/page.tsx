@@ -12,9 +12,10 @@ export default function NewResultPage() {
   const [uploadedPath, setUploadedPath] = useState('');
   const [uploadedUrl, setUploadedUrl] = useState('');
   const [title, setTitle] = useState('');
+  const [category, setCategory] = useState('graphic');
   const [projectUrl, setProjectUrl] = useState('');
-  const [isPinned, setIsPinned] = useState(false);
-  const [isPublished, setIsPublished] = useState(false);
+  const [isPinned, setIsPinned] = useState(true);
+  const [isPublished, setIsPublished] = useState(true);
   const [uploading, setUploading] = useState(false);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
@@ -62,14 +63,20 @@ export default function NewResultPage() {
           thumbnail_url: uploadedUrl,
           thumbnail_path: uploadedPath,
           title: title.trim(),
+          category,
           project_url: projectUrl,
           is_pinned: isPinned,
           is_published: isPublished,
         }),
       });
       const data = await res.json();
-      if (!res.ok) { setError(data.error); return; }
+      if (!res.ok) { 
+        setError(data.error || 'Gagal menyimpan karya.'); 
+        return; 
+      }
       router.push('/admin/results');
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : 'Terjadi kesalahan saat menyimpan data.');
     } finally {
       setSaving(false);
     }
@@ -82,7 +89,7 @@ export default function NewResultPage() {
         <nav className={styles.adminNav} aria-label="Admin navigation">
           <Link href="/admin" className={styles.adminNavLink}>Overview</Link>
           <Link href="/admin/results" className={`${styles.adminNavLink} ${styles.adminNavLinkActive}`}>Results</Link>
-          <Link href="/admin/pricing" className={styles.adminNavLink}>Pricing</Link>
+          <Link href="/admin/skills" className={styles.adminNavLink}>Software Skills</Link>
           <Link href="/admin/instagram" className={styles.adminNavLink}>Instagram</Link>
           <Link href="/admin/settings" className={styles.adminNavLink}>Settings</Link>
         </nav>
@@ -113,7 +120,7 @@ export default function NewResultPage() {
               aria-label="Pilih thumbnail"
             />
             <p style={{ fontSize: 'var(--font-size-xs)', color: 'var(--text-faint)' }}>
-              JPG, PNG, WebP. Maksimal 5MB.
+              JPG, PNG, WebP. Maksimal 5MB. Rekomendasi ratio Graphic Design: <strong>3:4 (Portrait Poster)</strong>.
             </p>
           </div>
 
@@ -123,7 +130,14 @@ export default function NewResultPage() {
               <img
                 src={previewUrl}
                 alt="Preview thumbnail"
-                style={{ width: 160, height: 160, objectFit: 'cover', borderRadius: 'var(--radius-md)', background: 'var(--surface-2)' }}
+                style={{ 
+                  width: category === 'graphic' ? 150 : 200, 
+                  height: category === 'graphic' ? 200 : 120, 
+                  objectFit: 'cover', 
+                  borderRadius: 'var(--radius-md)', 
+                  background: 'var(--surface-2)',
+                  border: '1px solid rgba(255,255,255,0.1)'
+                }}
               />
               {uploadedUrl && (
                 <p style={{ fontSize: 'var(--font-size-xs)', color: '#81c784', marginTop: 'var(--space-2)' }}>
@@ -134,12 +148,26 @@ export default function NewResultPage() {
           )}
 
           <div className={styles.field}>
-            <label htmlFor="project-title" className={styles.label}>Judul Video / Project</label>
+            <label htmlFor="project-category" className={styles.label}>Kategori Karya</label>
+            <select
+              id="project-category"
+              className={styles.input}
+              value={category}
+              onChange={(e) => setCategory(e.target.value)}
+              style={{ background: 'var(--surface-2)', color: 'var(--text)' }}
+            >
+              <option value="graphic">Graphic Design</option>
+              <option value="video">Video Editor</option>
+            </select>
+          </div>
+
+          <div className={styles.field}>
+            <label htmlFor="project-title" className={styles.label}>Judul Video / Desain</label>
             <input
               id="project-title"
               type="text"
               className={styles.input}
-              placeholder="Contoh: Cinematic School Project 2026"
+              placeholder="Contoh: Poster Event Sekolah / Cinematic Video 2026"
               value={title}
               onChange={(e) => setTitle(e.target.value)}
               required

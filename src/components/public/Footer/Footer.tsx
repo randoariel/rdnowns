@@ -2,8 +2,8 @@ import styles from './Footer.module.css';
 
 const NAV_LINKS = [
   { href: '#home',   label: 'HOME' },
+  { href: '#about',  label: 'ABOUT' },
   { href: '#result', label: 'RESULT' },
-  { href: '#get',    label: 'GET' },
 ];
 
 export default function Footer() {
