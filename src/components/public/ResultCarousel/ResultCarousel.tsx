@@ -106,8 +106,7 @@ export default function ResultCarousel({ items, instagramUsername, instagramUrl 
     const isMobile = typeof window !== 'undefined' && window.innerWidth < 768;
     if (isMobile) {
       const ratio = aspectRatios[item.id];
-      // 3:4 is approx 0.75 (allow 0.70 to 0.80 range)
-      const is3by4 = ratio ? ratio >= 0.70 && ratio <= 0.80 : false;
+      const is3by4 = ratio ? ratio >= 0.70 && ratio <= 0.80 : true;
 
       // STEP 1: Klik 1 untuk buka garis (expand accordion)
       if (activeIndex !== index) {
@@ -177,7 +176,8 @@ export default function ResultCarousel({ items, instagramUsername, instagramUrl 
           {carouselItems.map((item, i) => {
             const isActive = activeIndex === i;
             const ratio = aspectRatios[item.id];
-            const is3by4 = ratio ? ratio >= 0.70 && ratio <= 0.80 : false;
+            // ponytail: default true (assume 3:4) until image actually loads and proves otherwise
+            const is3by4 = ratio ? ratio >= 0.70 && ratio <= 0.80 : true;
             const isZoomOut = (!is3by4 && (hoveredZoomOutIndex === i || mobileZoomOutIndex === i));
 
             return (
