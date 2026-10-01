@@ -23,6 +23,8 @@ export default function ResultsPage() {
   const [deleteId, setDeleteId] = useState<string | null>(null);
   const [deleting, setDeleting] = useState(false);
   const [error, setError] = useState('');
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+  const [batchDeleting, setBatchDeleting] = useState(false);
 
   const fetchItems = useCallback(async () => {
     setLoading(true);
@@ -98,9 +100,41 @@ export default function ResultsPage() {
     try {
       await fetch(`/api/admin/results/${deleteId}`, { method: 'DELETE' });
       setDeleteId(null);
+      selectedIds.delete(deleteId);
+      setSelectedIds(new Set(selectedIds));
       fetchItems();
     } finally {
       setDeleting(false);
+    }
+  }
+
+  function toggleSelect(id: string) {
+    const next = new Set(selectedIds);
+    if (next.has(id)) next.delete(id);
+    else next.add(id);
+    setSelectedIds(next);
+  }
+
+  function toggleSelectAll() {
+    const visible = items.filter(i => selectedTab === 'all' || (i.category || 'video') === selectedTab);
+    if (selectedIds.size === visible.length) {
+      setSelectedIds(new Set());
+    } else {
+      setSelectedIds(new Set(visible.map(i => i.id)));
+    }
+  }
+
+  async function batchDelete() {
+    if (selectedIds.size === 0) return;
+    setBatchDeleting(true);
+    try {
+      await Promise.all(
+        Array.from(selectedIds).map(id => fetch(`/api/admin/results/${id}`, { method: 'DELETE' }))
+      );
+      setSelectedIds(new Set());
+      fetchItems();
+    } finally {
+      setBatchDeleting(false);
     }
   }
 
@@ -156,141 +190,124 @@ export default function ResultsPage() {
 
         {error && <p className={styles.error} role="alert">{error}</p>}
 
+        {/* Batch actions bar */}
+        {selectedIds.size > 0 && (
+          <div style={{
+            display: 'flex', alignItems: 'center', gap: '12px',
+            padding: '8px 12px', marginBottom: '12px',
+            background: 'rgba(229,115,115,0.08)', border: '1px solid rgba(229,115,115,0.3)',
+            borderRadius: 'var(--radius-sm)', fontSize: '13px', color: '#e57373',
+          }}>
+            <span>{selectedIds.size} item dipilih</span>
+            <button
+              className={styles.dangerBtn}
+              onClick={batchDelete}
+              disabled={batchDeleting}
+              style={{ fontSize: '11px', padding: '4px 10px' }}
+            >
+              {batchDeleting ? 'Menghapus...' : 'Hapus Semua Terpilih'}
+            </button>
+            <button
+              className={styles.secondaryBtn}
+              onClick={() => setSelectedIds(new Set())}
+              style={{ fontSize: '11px', padding: '4px 10px', marginLeft: 'auto' }}
+            >
+              Batal
+            </button>
+          </div>
+        )}
+
         {loading ? (
           <p style={{ color: 'var(--text-faint)' }}>Memuat...</p>
         ) : items.length === 0 ? (
           <p style={{ color: 'var(--text-faint)' }}>Belum ada result. Tambah yang pertama.</p>
         ) : (
-          <table className={styles.table}>
-            <thead>
-              <tr>
-                <th>Thumbnail</th>
-                <th>Judul & URL</th>
-                <th>Show Off (Pin max 5)</th>
-                <th>Status</th>
-                <th>Urutan</th>
-                <th>Aksi</th>
-              </tr>
-            </thead>
-            <tbody>
+          <>
+            {/* Select all checkbox */}
+            <label style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '12px', color: 'var(--text-dim)', marginBottom: '12px', cursor: 'pointer' }}>
+              <input
+                type="checkbox"
+                checked={selectedIds.size === items.filter(i => selectedTab === 'all' || (i.category || 'video') === selectedTab).length && items.length > 0}
+                onChange={toggleSelectAll}
+                style={{ width: 16, height: 16 }}
+              />
+              Pilih semua
+            </label>
+
+            {/* Card list (mobile-friendly, no horizontal scroll) */}
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
               {items
                 .filter(item => selectedTab === 'all' || (item.category || 'video') === selectedTab)
                 .map((item, idx) => (
-                <tr key={item.id}>
-                  <td>
-                    {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img
-                      src={item.thumbnail_url}
-                      alt="thumbnail"
-                      className={styles.thumbPreview}
-                    />
-                  </td>
-                  <td>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '4px' }}>
+                <div key={item.id} style={{
+                  display: 'flex', gap: '10px', alignItems: 'flex-start',
+                  padding: '10px', borderRadius: 'var(--radius-sm)',
+                  border: selectedIds.has(item.id) ? '1px solid rgba(229,115,115,0.5)' : '1px solid var(--border)',
+                  background: 'var(--surface)',
+                }}>
+                  {/* Checkbox */}
+                  <input
+                    type="checkbox"
+                    checked={selectedIds.has(item.id)}
+                    onChange={() => toggleSelect(item.id)}
+                    style={{ width: 16, height: 16, marginTop: 4, flexShrink: 0 }}
+                  />
+
+                  {/* Thumbnail */}
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img src={item.thumbnail_url} alt="" style={{ width: 48, height: 48, objectFit: 'cover', borderRadius: 4, flexShrink: 0, background: 'var(--surface-2)' }} />
+
+                  {/* Info */}
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '6px', flexWrap: 'wrap', marginBottom: 2 }}>
                       <span style={{
-                        fontSize: '10px',
-                        padding: '2px 6px',
-                        borderRadius: '4px',
-                        background: (item.category || 'video') === 'graphic' ? 'rgba(59, 130, 246, 0.2)' : 'rgba(168, 85, 247, 0.2)',
+                        fontSize: '9px', padding: '1px 5px', borderRadius: 3,
+                        background: (item.category || 'video') === 'graphic' ? 'rgba(59,130,246,0.2)' : 'rgba(168,85,247,0.2)',
                         color: (item.category || 'video') === 'graphic' ? '#60a5fa' : '#c084fc',
-                        border: '1px solid rgba(255, 255, 255, 0.1)',
-                        textTransform: 'uppercase',
-                        fontWeight: 700,
+                        textTransform: 'uppercase', fontWeight: 700,
                       }}>
-                        {(item.category || 'video') === 'graphic' ? 'GRAPHIC' : 'VIDEO'}
+                        {(item.category || 'video') === 'graphic' ? 'GD' : 'VID'}
                       </span>
-                      <p style={{ fontWeight: 'var(--font-weight-semibold)', color: 'var(--text)' }}>
+                      <span style={{ fontSize: '13px', fontWeight: 600, color: 'var(--text)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                         {item.title || 'Untitled'}
-                      </p>
+                      </span>
                     </div>
-                    <a
-                      href={item.project_url}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      style={{ color: 'var(--text-dim)', textDecoration: 'underline', fontSize: 'var(--font-size-xs)' }}
-                    >
-                      {item.project_url.length > 35 ? item.project_url.slice(0, 35) + '...' : item.project_url}
-                    </a>
-                  </td>
-                  <td>
-                    <button
-                      type="button"
-                      onClick={() => togglePin(item.id, item.is_pinned, item.category || 'video')}
-                      style={{
-                        display: 'inline-flex',
-                        alignItems: 'center',
-                        gap: '6px',
-                        padding: '4px 10px',
-                        borderRadius: 'var(--radius-sm)',
-                        fontSize: 'var(--font-size-xs)',
-                        fontWeight: 'var(--font-weight-medium)',
-                        backgroundColor: item.is_pinned ? 'rgba(255, 215, 0, 0.15)' : 'var(--surface-2)',
-                        color: item.is_pinned ? '#ffd700' : 'var(--text-dim)',
-                        border: item.is_pinned ? '1px solid rgba(255, 215, 0, 0.4)' : '1px solid var(--border)',
-                        cursor: 'pointer'
-                      }}
-                      title={item.is_pinned ? 'Klik untuk unpin' : 'Klik untuk pin (tampil di Result depan)'}
-                    >
-                      {item.is_pinned ? '⭐ Pinned (Depan)' : '☆ Biasa'}
-                    </button>
-                  </td>
-                  <td>
-                    <button
-                      type="button"
-                      onClick={() => togglePublish(item.id, item.is_published)}
-                      className={`${styles.badge} ${item.is_published ? styles.badgePublished : styles.badgeDraft}`}
-                      style={{ cursor: 'pointer', border: 'none' }}
-                      title="Klik untuk mengubah status Publish / Draft"
-                    >
-                      {item.is_published ? '✓ Published' : '○ Draft'}
-                    </button>
-                  </td>
-                  <td>
-                    <div style={{ display: 'flex', gap: 'var(--space-2)' }}>
+
+                    {/* Action row */}
+                    <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap', marginTop: 6 }}>
                       <button
-                        className={styles.secondaryBtn}
-                        onClick={() => moveOrder(item.id, 'up')}
-                        disabled={idx === 0}
-                        aria-label="Geser ke atas"
+                        type="button"
+                        onClick={() => togglePin(item.id, item.is_pinned, item.category || 'video')}
+                        style={{
+                          fontSize: '10px', padding: '2px 8px', borderRadius: 4, cursor: 'pointer',
+                          background: item.is_pinned ? 'rgba(255,215,0,0.15)' : 'var(--surface-2)',
+                          color: item.is_pinned ? '#ffd700' : 'var(--text-faint)',
+                          border: item.is_pinned ? '1px solid rgba(255,215,0,0.4)' : '1px solid var(--border)',
+                        }}
                       >
-                        ↑
+                        {item.is_pinned ? 'Pinned' : 'Pin'}
                       </button>
                       <button
-                        className={styles.secondaryBtn}
-                        onClick={() => moveOrder(item.id, 'down')}
-                        disabled={idx === items.length - 1}
-                        aria-label="Geser ke bawah"
-                      >
-                        ↓
-                      </button>
-                    </div>
-                  </td>
-                  <td>
-                    <div style={{ display: 'flex', gap: 'var(--space-2)', flexWrap: 'wrap' }}>
-                      <button
-                        className={styles.secondaryBtn}
+                        type="button"
                         onClick={() => togglePublish(item.id, item.is_published)}
+                        style={{
+                          fontSize: '10px', padding: '2px 8px', borderRadius: 4, cursor: 'pointer', border: 'none',
+                          background: item.is_published ? 'rgba(129,199,132,0.15)' : 'var(--surface-2)',
+                          color: item.is_published ? '#81c784' : 'var(--text-faint)',
+                        }}
                       >
-                        {item.is_published ? 'Unpublish' : 'Publish'}
+                        {item.is_published ? 'Published' : 'Draft'}
                       </button>
-                      <Link
-                        href={`/admin/results/${item.id}/edit`}
-                        className={styles.secondaryBtn}
-                      >
-                        Edit
-                      </Link>
-                      <button
-                        className={styles.dangerBtn}
-                        onClick={() => setDeleteId(item.id)}
-                      >
-                        Hapus
-                      </button>
+                      <button className={styles.secondaryBtn} onClick={() => moveOrder(item.id, 'up')} disabled={idx === 0} style={{ fontSize: '10px', padding: '2px 6px', minHeight: 0 }}>↑</button>
+                      <button className={styles.secondaryBtn} onClick={() => moveOrder(item.id, 'down')} disabled={idx === items.length - 1} style={{ fontSize: '10px', padding: '2px 6px', minHeight: 0 }}>↓</button>
+                      <Link href={`/admin/results/${item.id}/edit`} className={styles.secondaryBtn} style={{ fontSize: '10px', padding: '2px 8px', minHeight: 0 }}>Edit</Link>
+                      <button className={styles.dangerBtn} onClick={() => setDeleteId(item.id)} style={{ fontSize: '10px', padding: '2px 8px', minHeight: 0 }}>Hapus</button>
                     </div>
-                  </td>
-                </tr>
+                  </div>
+                </div>
               ))}
-            </tbody>
-          </table>
+            </div>
+          </>
         )}
 
         {/* Delete confirmation dialog (R-26: closable with Escape) */}
