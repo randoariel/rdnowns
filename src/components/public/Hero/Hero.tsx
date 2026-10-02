@@ -1,61 +1,12 @@
 'use client';
 
-import { useEffect, useRef, useState, useCallback } from 'react';
+import { useEffect, useRef } from 'react';
 import styles from './Hero.module.css';
-
-const SCRAMBLE_CHARS = '!@#$%^&*()_+-=[]{}|;:,.<>?/~`ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
-const TARGET_TEXT = 'RDN';
-const SCRAMBLE_DURATION = 1200;
-
-function useTextScramble(target: string, duration: number) {
-  const [text, setText] = useState('');
-  const [done, setDone] = useState(false);
-
-  useEffect(() => {
-    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
-      setText(target);
-      setDone(true);
-      return;
-    }
-
-    const start = performance.now();
-    let raf: number;
-
-    const step = (now: number) => {
-      const elapsed = now - start;
-      const progress = Math.min(elapsed / duration, 1);
-
-      const result = target
-        .split('')
-        .map((char, i) => {
-          const charThreshold = i / target.length;
-          if (progress > charThreshold + 0.3) return char;
-          return SCRAMBLE_CHARS[Math.floor(Math.random() * SCRAMBLE_CHARS.length)];
-        })
-        .join('');
-
-      setText(result);
-
-      if (progress < 1) {
-        raf = requestAnimationFrame(step);
-      } else {
-        setText(target);
-        setDone(true);
-      }
-    };
-
-    raf = requestAnimationFrame(step);
-    return () => cancelAnimationFrame(raf);
-  }, [target, duration]);
-
-  return { text, done };
-}
 
 export default function Hero() {
   const sectionRef = useRef<HTMLElement>(null);
   const innerRef = useRef<HTMLDivElement>(null);
   const labelRef = useRef<HTMLSpanElement>(null);
-  const { text: scrambledText } = useTextScramble(TARGET_TEXT, SCRAMBLE_DURATION);
 
   // Parallax: heading moves slower than scroll
   useEffect(() => {
@@ -94,14 +45,14 @@ export default function Hero() {
   }, []);
 
   return (
-    <section ref={sectionRef} id="home" className={styles.section} aria-label="RDN — Videografi &amp; Video Editing">
+    <section ref={sectionRef} id="home" className={styles.section} aria-label="RDN — own portofolio">
       <div ref={innerRef} className={`container ${styles.inner}`}>
         <h1 className={styles.heading} aria-label="RDN">
-          {scrambledText}
+          RDN
         </h1>
 
         <span ref={labelRef} className={`label ${styles.label}`}>
-          Videografi &amp; Video Editing
+          own portofolio
         </span>
       </div>
 

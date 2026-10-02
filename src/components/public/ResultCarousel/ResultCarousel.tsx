@@ -273,18 +273,13 @@ export default function ResultCarousel({ items, instagramUsername, instagramUrl 
                     <span className={styles.indexNumber}>
                       <CountUpIndex target={i + 1} />
                     </span>
-                    <span className={`${styles.statusPill} ${isActive ? styles.statusOn : styles.statusOff}`}>
-                      {isActive ? '● ON / ACTIVE' : '○ OFF'}
-                    </span>
                   </div>
 
-                  <div className={styles.viewBadge}>
-                    <span>
-                      {isActive
-                        ? `${item.title ? item.title + ' — ' : ''}Buka Link Project ↗`
-                        : 'Tap 1x untuk Buka'}
-                    </span>
-                  </div>
+                  {item.title && (
+                    <div className={styles.projectTitleWrapper}>
+                      <span className={styles.projectTitle}>{item.title}</span>
+                    </div>
+                  )}
                 </div>
               </a>
             );
